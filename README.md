@@ -70,3 +70,12 @@ like this:
 Resolves: #123
 See also: #456, #789
 ```
+
+## Directory Structure
+
+```
+- project: For Iteration 1 and 2 before the system is splitted into a few programs. Then new folders shold be created.
+- README.md: For our referrence
+- README.txt: For our grade
+- Documentation: For UMLs and any related documentations
+```
