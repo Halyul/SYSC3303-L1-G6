@@ -55,15 +55,7 @@ public class Communication {
 	 * @return true if the message is successfully send, false otherwise
 	 */
 	public Boolean send(String role, long time, int floor, int number, int button, String state) {
-		// maybe remove the assignments here, looks useless
-		this.role = role;
-		this.time = time;
-		this.floor = floor;
-		this.number = number;
-		this.button = button;
-		this.state = state;
-		String message = "role:" + this.role + ";time:" + this.time +";floor:" + this.floor + ";number:"
-						+ this.number + ";button:" + this.button + ";state:" + this.state + ";";
+		String message = "role:" + role + ";time:" + time +";floor:" + floor + ";number:" + number + ";button:" + button + ";state:" + state + ";";
 		System.out.println(message);
 		byte[] messageBytes = message.getBytes();
 		// should send the message to the host here
@@ -77,19 +69,47 @@ public class Communication {
 	public Boolean get() {
 		// should get the message from the host
 		// received message should not include role and number
-		String b = "time:" + this.time +";floor:" + this.floor + ";";
+		String b = "role:elevator;time:1612045259;floor:7;number:1;button:0;state:waiting;";
 		byte[] a = b.getBytes();
-		String message = new String(a);
+		parse(a);
+		return true;
+	}
+
+	/**
+	 * Parse the message
+	 * TODO: error handling
+	 * @param inputMessage the received message
+	 */
+	public Boolean parse(byte[] inputMessage) {
+		String message = new String(inputMessage);
 		String[] messageArray = message.split(";");
 		for (String item: messageArray) {
 			String[] itemArray = item.split(":");
 			String key = itemArray[0];
 			String value = itemArray[1];
-			if (key.equals("floor")) {
+			if (key.equals("role")) {
+				this.role = value;
+			} else if (key.equals("time")) {
+				this.time = Long.parseLong(value);
+			} else if (key.equals("floor")) {
 				this.floor = Integer.parseInt(value);
+			} else if (key.equals("number")) {
+				this.number = Integer.parseInt(value);
+			} else if (key.equals("button")) {
+				this.button = Integer.parseInt(value);
+			} else if (key.equals("state")) {
+				this.state = value;
 			}
 		}
 		return true;
+	}
+
+	public String getRole() {
+		return this.role;
+	}
+
+	public long getTime() {
+		return this.time;
 	}
 	
 	/**
@@ -98,5 +118,17 @@ public class Communication {
 	 */
 	public int getFloor() {
 		return this.floor;
+	}
+
+	public int getNumber() {
+		return this.number;
+	}
+
+	public int getButton() {
+		return this.button;
+	}
+
+	public String getState() {
+		return this.state;
 	}
 }
