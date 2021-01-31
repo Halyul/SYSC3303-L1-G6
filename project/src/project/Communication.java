@@ -17,6 +17,7 @@ public class Communication {
 	// time of the message
 	private long time;
 	// for elevator, the next floor the elevator should go to
+	// if currentFloor == floor, means the door should open
 	// for floor, 
 	// if the value is 0, it is meant a status check
 	private int floor;
@@ -54,14 +55,16 @@ public class Communication {
 	 * @return true if the message is successfully send, false otherwise
 	 */
 	public Boolean send(String role, long time, int floor, int number, int button, String state) {
+		// maybe remove the assignments here, looks useless
 		this.role = role;
 		this.time = time;
 		this.floor = floor;
 		this.number = number;
 		this.button = button;
 		this.state = state;
-		String message = "role:" + this.role + "time:" + this.time +";floor:" + this.floor + ";number:"
+		String message = "role:" + this.role + ";time:" + this.time +";floor:" + this.floor + ";number:"
 						+ this.number + ";button:" + this.button + ";state:" + this.state + ";";
+		System.out.println(message);
 		byte[] messageBytes = message.getBytes();
 		// should send the message to the host here
 		return true;

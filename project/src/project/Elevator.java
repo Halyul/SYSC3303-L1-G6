@@ -24,6 +24,7 @@ public class Elevator implements Runnable {
 	private ArrayList<ElevatorButton> buttons = new ArrayList<ElevatorButton>();
 	private ArrayList<ElevatorButton> floorLamps = new ArrayList<ElevatorButton>();
 	private ArrayList<ArrivalSensor> arrivalSensors = new ArrayList<ArrivalSensor>();
+	private ArrayList<ElevatorLamp> elevatorLamps = new ArrayList<ElevatorLamp>();
 	// private DirectionLamp upLamp = new DirectionLamp();
 	// private DirectionLamp downLamp = new DirectionLamp();
 	
@@ -39,27 +40,30 @@ public class Elevator implements Runnable {
 				buttons.add(new ElevatorButton(i));
 				floorLamps.add(new ElevatorButton(i));
 				arrivalSensors.add(new ArrivalSensor(i));
+				elevatorLamps.add(new ElevatorLamp(i));
 			}
 		}
 	}
 	
 	/**
 	 * Move to next floor
+	 * TODO: use arrival sensors
 	 * @param nextFloor the floor the elevator will go to
 	 */
 	private void move(int nextFloor) {
-		send(0, "moving");
+		send(0, "moving", false);
 		System.out.println(Thread.currentThread().getName() + ": Moving to " + nextFloor + " floor.");
 		int difference = nextFloor - currentFloor;
 		// DirectionLamp lamp = (difference > 0) ? this.upLamp : this.downLamp;
 		// lamp.on();
 		double displacement = Math.abs(difference) * this.floorHeight;
 		motor.move(displacement);
-		send(0, "waiting");
 		this.currentFloor = nextFloor;
-		buttons.get(buttonIndex(nextFloor)).off();
+		buttons.get(buttonIndex(this.currentFloor)).off();
+		elevatorLamps.get(buttonIndex(this.currentFloor)).off();
 		// lamp.off();
 		System.out.println(Thread.currentThread().getName() + ": arrived at " + nextFloor + " floor.");
+		send(0, "waiting", false);
 		door.toggle();
 	}
 	
@@ -67,7 +71,7 @@ public class Elevator implements Runnable {
 	 * report current status to the scheduler
 	 */
 	private void status() {
-		send(0, "waiting");
+		send(0, "waiting", false);
 	}
 	
 	/**
@@ -77,9 +81,10 @@ public class Elevator implements Runnable {
 	 */
 	private void press(int button) {
 		if (this.totalUndergroundFloors < button && button != 0 && button <= totalGroundFloors && button != this.currentFloor) {
-			send(button, "waiting");
+			send(button, "waiting", false);
 			if (button > 0) {
 				buttons.get(buttonIndex(button)).press();
+				elevatorLamps.get(buttonIndex(button)).on();
 			} else {
 				buttons.get(buttonIndex(button)).press();
 			}
@@ -108,11 +113,11 @@ public class Elevator implements Runnable {
 	 * @param button the button pressed in the car
 	 * @param state the status of the elevator
 	 */
-	private void send(int button, String state) {
+	private void send(int button, String state, Boolean noRetry) {
 		Boolean isSent = false;
 		while(!isSent) {
 			isSent = c.send("elevator", getTime(), this.currentFloor, this.number, button, state);
-			if (!isSent) {
+			if (!isSent && !noRetry) {
 				try {
 				    Thread.sleep(this.delay);
 				} catch(InterruptedException e) {
@@ -140,6 +145,8 @@ public class Elevator implements Runnable {
 		int nextFloor = c.getFloor();
 		if (nextFloor == 0) {
 			status();
+		} else if (nextFloor == this.currentFloor) {
+			door.toggle();
 		} else {
 			move(nextFloor);
 		}
@@ -162,10 +169,8 @@ public class Elevator implements Runnable {
 //    	while(true) {
 //    		get();
 //    	}
-    	move(2);
-    	move(3);
     	move(7);
-    	move(1);
+    	move(6);
     }
     
     private class Door {
@@ -191,16 +196,18 @@ public class Elevator implements Runnable {
     }
     
     private class Motor {
-    	// The maximum speed of the elevator in m/s
-    	private static final double maxSpeed = 1.3; 
+    	// The maximum speed of the elevator in m/s, 1.3 * 1.1
+    	private static final double maxSpeed = 1.43; 
     	// The acceleration of the elevator in m/s^2
-    	private static final double acceleration = 0.65;
+    	// one floor uses different acceleration, like 0.1
+    	private static final double acceleration = 0.6;
     	// The time the elevator takes to acceleration to maxSpeed and deacceleration from maxSpeed in seconds
-    	private static final double accelerationTime = 2;
+    	private final double accelerationTime = maxSpeed / acceleration;
     	// The displacement the elevator takes to accelerate to maxSpeed and deacceleration from maxSpeed
     	private final double accelerationDisplacement = 0.5 * acceleration * Math.pow(accelerationTime, 2);
     	// 0 for stationary, 1 for up, 0 for down
     	private int direction = 0;
+    	private double currentSpeed = 0;
     	
     	public Motor() {
     		
@@ -209,12 +216,12 @@ public class Elevator implements Runnable {
     	/**
     	 * To simulate the movement of moving between floors
     	 */
-    	private void move(double displacement) {
+    	public void move(double displacement) {
     		double movementTime;
 			if (displacement < this.accelerationDisplacement * 2) {
-				movementTime = displacement / this.acceleration;
+				movementTime = Math.sqrt(2 * displacement / this.acceleration);
 			} else {
-				movementTime = (displacement - this.accelerationDisplacement * 2) / this.maxSpeed + accelerationTime * 2;
+				movementTime = (displacement - this.accelerationDisplacement * 2) / this.maxSpeed + this.accelerationTime * 2;
 			}
 			System.out.println(Thread.currentThread().getName() + ": " + displacement + "m; " + movementTime + " seconds.");
 			try {
@@ -225,48 +232,74 @@ public class Elevator implements Runnable {
     	}
     	
     	/**
+    	 * Update the status from the elevator
+    	 */
+    	public void update(double thmSpeed) {
+    		this.currentSpeed = (thmSpeed > this.maxSpeed) ? this.maxSpeed : thmSpeed;
+    	}
+    	
+    	/**
     	 * To simulate the up movement of moving between floors
     	 */
-    	private void up() {
+    	public double up() {
     		this.direction = 1;
+    		start();
+    		return this.currentSpeed;
     	}
     	
     	/**
     	 * To simulate the down movement of moving between floors
     	 */
-    	private void down() {
+    	public double down() {
     		this.direction = 0;
+    		start();
+    		return this.currentSpeed;
     	}
     	
     	/**
     	 * To simulate the stop
     	 */
-    	private void stop() {
+    	public void stop() {
     		this.direction = 0;
+    		this.currentSpeed = 0;
+    	}
+    	
+    	private void start() {
+    		
+    	}
+    	
+    	public double getAcceleration() {
+    		return this.acceleration;
+    	}
+    	
+    	public double getAccelerationDisplacement() {
+    		return this.accelerationDisplacement;
+    	}
+    	
+    	public double getAccelerationTime() {
+    		return this.accelerationTime;
     	}
     }
     
     private class ElevatorButton {
     	private int number;
-    	private ElevatorLamp lamp;
     	
     	public ElevatorButton(int number) {
     		this.number = number;
-    		this.lamp = new ElevatorLamp(number);
     	}
     	
     	/**
     	 * The button is pressed
     	 */
     	public void press() {
-    		this.lamp.on();
+    		
     	}
     	
     	/**
     	 * Turn off the light when the elevator arrives
     	 */
     	public void off() {
-    		this.lamp.off();
+    		
     	}
     }
     
@@ -300,8 +333,20 @@ public class Elevator implements Runnable {
     	private static final double floorHeight = 3.57; 
     	private int number;
     	
+    	// USE A REAL HARDWARE PLEASE
+    	// Notes: elevator passes in speed, acceleration, and floor number
+    	// arrival sensor calculates the time, and then thread sleep
+    	// when done, return the theoretical speed of the elevator.
+    	// The elevator knows it arrives at certain floor, send a call
+    	// to the scheduler (maybe, without retry). then make calls to 
+    	// next arrival sensor. if the theoretical speed is higher than 
+    	// the max speed, the max speed.
     	public ArrivalSensor(int number) {
     		this.number = number;
+    	}
+    	
+    	public void check() {
+    		
     	}
     }
 }
