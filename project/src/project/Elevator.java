@@ -18,7 +18,8 @@ public class Elevator implements Runnable {
     // the delay between retries
     private static final long delay = 250; 
     
-    private Communication c;
+    private Sender sender;
+    private Parser parser = new Parser();
     private Door door = new Door();
     private Motor motor = new Motor();
     // buttons of each floor in the car
@@ -38,10 +39,10 @@ public class Elevator implements Runnable {
     private int currentFloor;
     private ArrayList<Integer> nextFloors = new ArrayList<Integer>();
     
-    public Elevator(int number, int currentFloor, Server server) {
+    public Elevator(int number, int currentFloor, Database database) {
         this.number = number;
         this.currentFloor = currentFloor;
-        c = new Communication(server);
+        this.sender = new Sender(database);
         for(int i = this.totalUndergroundFloors; i <= this.totalGroundFloors; i++) {
             if (i != 0) {
                 buttons.add(new ElevatorButton(i));
@@ -147,7 +148,7 @@ public class Elevator implements Runnable {
     private void send(int button, String state, Boolean noRetry) {
         Boolean isSent = false;
         while(!isSent) {
-            isSent = c.send("elevator", getTime(), this.currentFloor, this.number, button, state);
+            isSent = sender.send("elevator", getTime(), this.currentFloor, this.number, button, state);
             if (!isSent && !noRetry) {
                 try {
                     Thread.sleep(this.delay);
@@ -163,8 +164,8 @@ public class Elevator implements Runnable {
      */
     private void get() {
     	if (this.messages.size() != 0) {
-    		c.parse(messages.get(0));
-            int nextFloor = c.getFloor();
+    		this.parser.parse(messages.get(0));
+            int nextFloor = parser.getFloor();
             messages.remove(0);
             if (nextFloor == 0) {
                 status();

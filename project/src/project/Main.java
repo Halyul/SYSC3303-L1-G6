@@ -8,7 +8,7 @@ public class Main {
 	public static void main(String[] args) {
 		// threads
         Thread elevatorThread, schedulerThread;
-        DataBase db = new DataBase();
+        Database db = new Database();
         // Elevator subsystem
         Elevator elevator = new Elevator(1, 1, db);
         Scheduler scheduler = new Scheduler(db, elevator);

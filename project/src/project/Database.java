@@ -1,10 +1,10 @@
 package project;
 import java.util.ArrayList;
 
-public class DataBase{
+public class Database{
 	private ArrayList<byte[]> messageList = new ArrayList<byte[]>();
 	
-	public DataBase() {}
+	public Database() {}
 	
     /*
      * 
