@@ -11,6 +11,7 @@ public class Floor implements Runnable {
 	private int topFloor;
 	private Communication c;
 	
+	private volatile ArrayList<byte[]> messages = new ArrayList<byte[]>();
 	
 	public Floor(int floorNumber, int topFloor, Server server) {
 		this.floorNumber = floorNumber;
@@ -50,31 +51,35 @@ public class Floor implements Runnable {
 		
 	}
 	
-	public class DirectionLamp{
-		
-	}
 	
-	private void send(Boolean FloorButton, int CarButton, String state) {
+	
+	private void send(long time, int direction, int CarButton, String state) {
 		Boolean isSent = false;
 		while(!isSent) {
-			isSent = c.send("floor", time, floor, number, button, state);
+			isSent = c.send("floor", time, this.floorNumber, CarButton, direction, state);
 		}
 	}
 	
-	public ArrayList<String> ReadInput(String inputFile) {
-		ArrayList<String> instructions = new ArrayList<String>();
+	public void ReadInput(String inputFile) {
 		try {
 			File inFile = new File(inputFile);
 			Scanner inReader = new Scanner(inFile);
 			while (inReader.hasNextLine()) {
 				String ins = inReader.nextLine();
-				instructions.add(ins);
+				String[] individualIns = ins.split("\\s+");
+				long convertedTime = Long.parseLong(individualIns[0].replaceAll("[^0-9]", ""));
+				int dir = 0;
+				if(individualIns[2].equals("Up"))
+					dir = 1;
+				else if(individualIns[2].equals("Down"))
+					dir = 0;
+				int destFloor = Integer.parseInt(individualIns[3]);
+				send(convertedTime, dir, destFloor, "reading");
 			}
 			
 			inReader.close();
 		}	catch (FileNotFoundException e) {
 			System.out.println("File not found");
 		}
-		return instructions;
 	}
 }
