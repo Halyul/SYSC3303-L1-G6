@@ -1,18 +1,18 @@
 package project;
 
 public class Scheduler implements Runnable {
-	private Server server = new Server();
+	private DataBase db = new DataBase();
 	private Communication c = new Communication();
 	private Elevator elevator_1;
 //	private Floor floor_1;
 	
-	public Scheduler(Server server, Elevator elevator) {
-		this.server = server;
+	public Scheduler(DataBase db, Elevator elevator) {
+		this.db = db;
 		this.elevator_1 = elevator;
 	}
 	
 	private void sendMessage() {
-		byte[] message = this.server.get();
+		byte[] message = this.db.get();
 		c.parse(message);
 		if(c.getRole().equals("floor")) {
 			elevator_1.put(message);

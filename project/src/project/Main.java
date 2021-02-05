@@ -8,10 +8,10 @@ public class Main {
 	public static void main(String[] args) {
 		// threads
         Thread elevatorThread, schedulerThread;
-        Server server = new Server();
+        DataBase db = new DataBase();
         // Elevator subsystem
-        Elevator elevator = new Elevator(1, 1, server);
-        Scheduler scheduler = new Scheduler(server, elevator);
+        Elevator elevator = new Elevator(1, 1, db);
+        Scheduler scheduler = new Scheduler(db, elevator);
         
         // new threads
         elevatorThread = new Thread(elevator, "Elevator 1");
