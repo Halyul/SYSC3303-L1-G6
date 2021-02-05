@@ -18,7 +18,7 @@ public class Elevator implements Runnable {
     // the delay between retries
     private static final long delay = 250; 
     
-    private Communication c = new Communication();
+    private Communication c;
     private Door door = new Door();
     private Motor motor = new Motor();
     // buttons of each floor in the car
@@ -32,14 +32,16 @@ public class Elevator implements Runnable {
     // direction indicators
     // private DirectionLamp upLamp = new DirectionLamp();
     // private DirectionLamp downLamp = new DirectionLamp();
+    private volatile ArrayList<byte[]> messages = new ArrayList<byte[]>();
     
     private int number;
     private int currentFloor;
     private ArrayList<Integer> nextFloors = new ArrayList<Integer>();
     
-    public Elevator(int number, int currentFloor) {
+    public Elevator(int number, int currentFloor, Server server) {
         this.number = number;
         this.currentFloor = currentFloor;
+        c = new Communication(server);
         for(int i = this.totalUndergroundFloors; i <= this.totalGroundFloors; i++) {
             if (i != 0) {
                 buttons.add(new ElevatorButton(i));
@@ -160,25 +162,27 @@ public class Elevator implements Runnable {
      * Get message from the Scheduler
      */
     private void get() {
-        Boolean isReceived = false;
-        while(!isReceived) {
-            isReceived = c.get();
-            if (!isReceived) {
-                try {
-                    Thread.sleep(this.delay);
-                } catch(InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+    	if (this.messages.size() != 0) {
+    		c.parse(messages.get(0));
+            int nextFloor = c.getFloor();
+            messages.remove(0);
+            if (nextFloor == 0) {
+                status();
+            } else if (nextFloor == this.currentFloor) {
+                door.toggle();
+            } else {
+                move(nextFloor);
             }
-        }
-        int nextFloor = c.getFloor();
-        if (nextFloor == 0) {
-            status();
-        } else if (nextFloor == this.currentFloor) {
-            door.toggle();
-        } else {
-            move(nextFloor);
-        }
+    	}
+    }
+    
+    /**
+     * For iteration 1, Scheduler sends the message to here
+     * 
+     * @param inputMessage the message
+     */
+    public void put(byte[] inputMessage) {
+    	this.messages.add(inputMessage);
     }
     
     /**
@@ -195,20 +199,12 @@ public class Elevator implements Runnable {
      */
     @Override
     public void run() {
-//    	while(true) {
-//    		get();
-//    	}
-        move(7);
-        move(6);
-        move(5);
-        move(4);
-        move(1);
-        move(2);
-        move(3);
-        move(4);
-        move(5);
-        move(6);
-        move(7);
+    	// init message
+    	send(1, "waiting", false);
+    	send(7, "testing", false);
+    	while(true) {
+    		get();
+    	}
     }
     
     private class Door {

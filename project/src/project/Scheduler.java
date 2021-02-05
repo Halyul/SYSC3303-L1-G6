@@ -14,11 +14,11 @@ public class Scheduler implements Runnable {
 	private void sendMessage() {
 		byte[] message = this.server.get();
 		c.parse(message);
-		if(c.getRole() == "Floor") {
+		if(c.getRole().equals("floor")) {
 			elevator_1.put(message);
-		}else if (c.getRole() == "elevator") {
+			System.out.println(Thread.currentThread().getName() + ": " + new String (message));
+		}else if (c.getRole().equals("elevator")) {
 //			floor_1.put(message);
-			System.out.println(new String (message));
 		}
 	}
 	
