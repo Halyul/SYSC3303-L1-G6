@@ -14,14 +14,17 @@ public class Floor implements Runnable {
 	private int topFloor;
 	private boolean elevatorPresent;
 	
-	private Communication c;
+	private Sender sender;
+	private Parser parser = new Parser();
+	private DirectionLamp upLamp = new DirectionLamp();
+	private DirectionLamp downLamp = new DirectionLamp();
 	
 	private volatile ArrayList<byte[]> messages = new ArrayList<byte[]>();
 	
-	public Floor(int floorNumber, int topFloor, Server server) {
+	public Floor(int floorNumber, int topFloor, Database database) {
 		this.floorNumber = floorNumber;
 		this.topFloor = topFloor;
-		c = new Communication(server);
+		this.sender = new Sender(database);
 		if(floorNumber == 0) {
 			FloorLamp upFLamp = new FloorLamp();
 			FloorButton upButton = new FloorButton();
@@ -68,10 +71,16 @@ public class Floor implements Runnable {
 	
     private void get() {
     	if (this.messages.size() != 0) {
-    		c.parse(messages.get(0));
+    		this.parser.parse(messages.get(0));
             messages.remove(0);
-            if (c.getFloor() == this.floorNumber) {
-            	
+            if (parser.getFloor() > this.floorNumber) {
+            	System.out.println("Direction lamp on floor "+this.floorNumber+" is pointing up");
+            }
+            else if (parser.getFloor() < this.floorNumber) {
+            	System.out.println("Direction lamp on floor "+this.floorNumber+" is down");
+            }
+            else {
+            	System.out.println("Elevator has arrived on floor "+this.floorNumber);
             }
     	}
     }
@@ -80,7 +89,7 @@ public class Floor implements Runnable {
 	private void send(long time, int direction, int CarButton, String state) {
 		Boolean isSent = false;
 		while(!isSent) {
-			isSent = c.send("floor", time, this.floorNumber, CarButton, direction, state);
+			isSent = sender.send("floor", time, this.floorNumber, CarButton, direction, state);
 		}
 	}
 	
