@@ -1,30 +1,52 @@
 package project;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 public class Scheduler implements Runnable {
-	private Server server = new Server();
-	private Communication c = new Communication();
+	private Database db = new Database();
+	private Parser parser = new Parser();
+	private Sender sender = new Sender(db);
 	private Elevator elevator_1;
-//	private Floor floor_1;
+	private Floor floor_1;
 	
-	public Scheduler(Server server, Elevator elevator) {
-		this.server = server;
+	public Scheduler(Database db, Elevator elevator, Floor floor) {
+		this.db = db;
 		this.elevator_1 = elevator;
+		this.floor_1 = floor;
 	}
 	
+	/**
+	 * forward the message to correct subsystem
+	 */
 	private void sendMessage() {
-		byte[] message = this.server.get();
-		c.parse(message);
-		if(c.getRole().equals("floor")) {
+		byte[] message = this.db.get();
+		parser.parse(message);
+		if(parser.getRole().equals("floor")) {
 			elevator_1.put(message);
-			System.out.println(Thread.currentThread().getName() + ": " + new String (message));
-		}else if (c.getRole().equals("elevator")) {
-//			floor_1.put(message);
+			System.out.println(Thread.currentThread().getName() + " - Send message from floor to elevator - " + new String (message));
+		}else if (parser.getRole().equals("elevator")) {
+			floor_1.put(message);
+			System.out.println(Thread.currentThread().getName() + " - Send message from elevator to floor - " + new String (message));
 		}
 	}
 	
+	/**
+     * @see java.lang.Runnable#run()
+     */
+    @Override
 	public void run() {
 		while(true) {
 			this.sendMessage();
 		}
 	}
+	
+	/**
+     * Get current time in epoch seconds
+     * @return as described above
+     */
+    private long getTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        return localDateTime.toEpochSecond(ZoneOffset.UTC);
+    }
 }
