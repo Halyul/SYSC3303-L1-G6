@@ -85,7 +85,10 @@ public class Floor implements Runnable {
     	}
     }
     
-	
+    public void put(byte[] inputMessage) {
+    	this.messages.add(inputMessage);
+    }
+    
 	private void send(long time, int direction, int CarButton, String state) {
 		Boolean isSent = false;
 		while(!isSent) {
