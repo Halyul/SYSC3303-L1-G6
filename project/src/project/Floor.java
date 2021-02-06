@@ -53,7 +53,7 @@ public class Floor implements Runnable {
      * @see java.lang.Runnable#run()
      */
 	public void run() {
-		ReadInput("input.txt");
+		ReadInput("floorInput.txt");
 		while(true) {
 			get();
 		}
@@ -84,15 +84,15 @@ public class Floor implements Runnable {
             messages.remove(0);
             //If the elevator is going up
             if (parser.getFloor() > this.floorNumber) {
-            	System.out.println("Direction lamp on floor "+this.floorNumber+" is pointing up");
+            	System.out.println(Thread.currentThread().getName() + ": Direction lamp on floor "+this.floorNumber+" is pointing up");
             }
             //else if the elevator is going down
             else if (parser.getFloor() < this.floorNumber) {
-            	System.out.println("Direction lamp on floor "+this.floorNumber+" is down");
+            	System.out.println(Thread.currentThread().getName() + ": Direction lamp on floor "+this.floorNumber+" is down");
             }
             //Else the elevator is at its destination
             else {
-            	System.out.println("Elevator has arrived on floor "+this.floorNumber);
+            	System.out.println(Thread.currentThread().getName() + ": Elevator has arrived on floor "+this.floorNumber);
             }
     	}
     }
@@ -114,7 +114,7 @@ public class Floor implements Runnable {
 	private void send(long time, int direction, int CarButton, String state) {
 		Boolean isSent = false;
 		while(!isSent) {
-			isSent = sender.send("floor", time, this.floorNumber, CarButton, direction, state);
+			isSent = sender.send("floor", this.floorNumber, this.floorNumber, direction, CarButton, time);
 		}
 	}
 	
@@ -151,7 +151,7 @@ public class Floor implements Runnable {
 			
 			inReader.close();
 		}	catch (FileNotFoundException e) {
-			System.out.println("File not found");
+			System.out.println(Thread.currentThread().getName() + ": File not found");
 		}
 	}
 }

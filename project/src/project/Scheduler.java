@@ -8,13 +8,17 @@ public class Scheduler implements Runnable {
 	private Parser parser = new Parser();
 	private Sender sender = new Sender(db);
 	private Elevator elevator_1;
-//	private Floor floor_1;
+	private Floor floor_1;
 	
-	public Scheduler(Database db, Elevator elevator) {
+	public Scheduler(Database db, Elevator elevator, Floor floor) {
 		this.db = db;
 		this.elevator_1 = elevator;
+		this.floor_1 = floor;
 	}
 	
+	/**
+	 * forward the message to correct subsystem
+	 */
 	private void sendMessage() {
 		byte[] message = this.db.get();
 		parser.parse(message);
@@ -22,11 +26,15 @@ public class Scheduler implements Runnable {
 			elevator_1.put(message);
 			System.out.println(Thread.currentThread().getName() + " - Send message from floor to elevator - " + new String (message));
 		}else if (parser.getRole().equals("elevator")) {
-//			floor_1.put(message);
+			floor_1.put(message);
 			System.out.println(Thread.currentThread().getName() + " - Send message from elevator to floor - " + new String (message));
 		}
 	}
 	
+	/**
+     * @see java.lang.Runnable#run()
+     */
+    @Override
 	public void run() {
 		while(true) {
 			this.sendMessage();

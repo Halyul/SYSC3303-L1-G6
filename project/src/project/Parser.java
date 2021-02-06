@@ -1,7 +1,7 @@
 package project;
 
 public class Parser {
-	// role of the subsystem: "scheduler", "elevator", "floor"
+    // role of the subsystem: "scheduler", "elevator", "floor"
     private String role;
     // the identity number
     private int identifier;
@@ -16,10 +16,6 @@ public class Parser {
     private int button;
     // time of the message
     private long time;
-    // the state 
-    // for elevator, "moving", "waiting"
-    // for floor, 
-    private String state;
     
     public Parser() {
         
@@ -33,6 +29,7 @@ public class Parser {
      * Parse the message
      * TODO: error handling
      * @param inputMessage the received message
+     * @return if the input message is successfully parsed
      */
     public Boolean parse(byte[] inputMessage) {
         String message = new String(inputMessage);
@@ -51,19 +48,25 @@ public class Parser {
                 this.identifier = Integer.parseInt(value);
             } else if (key.equals("button")) {
                 this.button = Integer.parseInt(value);
-            } else if (key.equals("state")) {
-                this.state = value;
             } else if (key.equals("direction")) {
                 this.direction = Integer.parseInt(value);
             }
         }
         return true;
     }
-
+    
+    /**
+     * get the sender of the message
+     * @return as described above
+     */
     public String getRole() {
         return this.role;
     }
-
+    
+    /**
+     * get the time of the message
+     * @return as described above
+     */
     public long getTime() {
         return this.time;
     }
@@ -75,19 +78,27 @@ public class Parser {
     public int getFloor() {
         return this.floor;
     }
-
+    
+    /**
+     * get the id of the sender
+     * @return as described above
+     */
     public int getIdentifier() {
         return this.identifier;
     }
 
+    /**
+     * get the button pressed in the car
+     * @return as described above
+     */
     public int getButton() {
         return this.button;
     }
-
-    public String getState() {
-        return this.state;
-    }
     
+    /**
+     * get the direction
+     * @return as described above
+     */
     public int getDirection() {
         return this.direction;
     }
