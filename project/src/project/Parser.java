@@ -3,18 +3,19 @@ package project;
 public class Parser {
 	// role of the subsystem: "scheduler", "elevator", "floor"
     private String role;
-    // time of the message
-    private long time;
+    // the identity number
+    private int identifier;
     // for elevator, the next floor the elevator should go to
     // if currentFloor == floor, means the door should open
     // for floor, 
     // if the value is 0, it is meant a status check
     private int floor;
-    // the identity number
-    private int identifier;
+    // up -> 1, down -> 0, undefined -> -1
+    private int direction;
     // for elevator, the button pressed in the car, 0 for nothing
-    // for floor, up -> 1, down -> 0
     private int button;
+    // time of the message
+    private long time;
     // the state 
     // for elevator, "moving", "waiting"
     // for floor, 
@@ -52,6 +53,8 @@ public class Parser {
                 this.button = Integer.parseInt(value);
             } else if (key.equals("state")) {
                 this.state = value;
+            } else if (key.equals("direction")) {
+                this.direction = Integer.parseInt(value);
             }
         }
         return true;
@@ -83,5 +86,9 @@ public class Parser {
 
     public String getState() {
         return this.state;
+    }
+    
+    public int getDirection() {
+        return this.direction;
     }
 }

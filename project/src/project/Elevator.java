@@ -35,12 +35,12 @@ public class Elevator implements Runnable {
     // private DirectionLamp downLamp = new DirectionLamp();
     private volatile ArrayList<byte[]> messages = new ArrayList<byte[]>();
     
-    private int number;
+    private int identifier;
     private int currentFloor;
     private ArrayList<Integer> nextFloors = new ArrayList<Integer>();
     
-    public Elevator(int number, int currentFloor, Database database) {
-        this.number = number;
+    public Elevator(int identifier, int currentFloor, Database database) {
+        this.identifier = identifier;
         this.currentFloor = currentFloor;
         this.sender = new Sender(database);
         for(int i = this.totalUndergroundFloors; i <= this.totalGroundFloors; i++) {
@@ -73,7 +73,7 @@ public class Elevator implements Runnable {
                 floorLamps.get(buttonIndex(i - 1)).off();
                 floorLamps.get(buttonIndex(i)).on();
                 this.currentFloor++;
-                send(0, "moving", true);
+                send(1, 0, "moving", true);
             }
         } else if (difference < 0) {
             // going down
@@ -85,13 +85,13 @@ public class Elevator implements Runnable {
                 floorLamps.get(buttonIndex(i + 1)).off();
                 floorLamps.get(buttonIndex(i)).on();
                 this.currentFloor--;
-                send(0, "moving", true);
+                send(0, 0, "moving", true);
             }
         }
         motor.stop();
         // directionLamp.off();
         System.out.println(Thread.currentThread().getName() + ": arrived at " + toFloor + " floor.");
-        send(0, "waiting", false);
+        send(-1, 0, "waiting", false);
         door.toggle();
     }
     
@@ -99,7 +99,7 @@ public class Elevator implements Runnable {
      * report current status to the scheduler
      */
     private void status() {
-        send(0, "waiting", false);
+        send(-1, 0, "waiting", false);
     }
     
     /**
@@ -109,7 +109,7 @@ public class Elevator implements Runnable {
      */
     private void press(int button) {
         if (this.totalUndergroundFloors < button && button != 0 && button <= totalGroundFloors && button != this.currentFloor) {
-            send(button, "waiting", false);
+            send(-1 ,button, "waiting", false);
             if (button > 0) {
                 buttons.get(buttonIndex(button)).press();
                 buttonLamps.get(buttonIndex(button)).on();
@@ -145,10 +145,10 @@ public class Elevator implements Runnable {
      * @param state the status of the elevator
      * @param noRetry when the message does not reach the host, retry or not
      */
-    private void send(int button, String state, Boolean noRetry) {
+    private void send(int direction, int button, String state, Boolean noRetry) {
         Boolean isSent = false;
         while(!isSent) {
-            isSent = sender.send("elevator", getTime(), this.currentFloor, this.number, button, state);
+            isSent = sender.send("elevator", this.identifier, this.currentFloor, direction, button, getTime(), state);
             if (!isSent && !noRetry) {
                 try {
                     Thread.sleep(this.delay);
@@ -201,8 +201,6 @@ public class Elevator implements Runnable {
     @Override
     public void run() {
     	// init message
-    	send(1, "waiting", false);
-    	send(7, "testing", false);
     	while(true) {
     		get();
     	}
