@@ -5,6 +5,7 @@ import java.time.ZoneOffset;
 
 import project.utils.Parser;
 import project.utils.Database;
+import project.backup.Sender;
 import project.elevator.*;
 
 public class Scheduler implements Runnable {
@@ -26,12 +27,12 @@ public class Scheduler implements Runnable {
 	private void sendMessage() {
 		byte[] message = this.db.get();
 		parser.parse(message);
-		if(parser.getRole().equals("floor")) {
+		if(parser.getRole().equals("Floor")) {
 			elevator_1.put(message);
-			System.out.println(Thread.currentThread().getName() + " - Send message from floor to Elevator - " + new String (message));
+			System.out.println(Thread.currentThread().getName() + " - Send message from Floor to Elevator - " + new String (message));
 		}else if (parser.getRole().equals("Elevator")) {
 			floor_1.put(message);
-			System.out.println(Thread.currentThread().getName() + " - Send message from Elevator to floor - " + new String (message));
+			System.out.println(Thread.currentThread().getName() + " - Send message from Elevator to Floor - " + new String (message));
 		}
 	}
 	

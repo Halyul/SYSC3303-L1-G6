@@ -1,4 +1,4 @@
-package project;
+package project.backup;
 import project.elevator.*;
 import project.elevator.src.ArrivalSensor;
 import project.elevator.src.Door;

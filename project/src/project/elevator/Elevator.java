@@ -112,6 +112,7 @@ public class Elevator implements Runnable {
             } else {
             	this.destFloor = destFloor;
             	// state Move
+            	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime());
             	return State.Move;
             }
         }

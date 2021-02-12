@@ -52,15 +52,19 @@ public class Sender {
     	return revMessage;
     }
     
-    public String sendArrivalInfo(int identifier, int elevatorID, long time) {
-    	String message = "role: arrival_sensor;id:" + identifier + ";elevatorID:" + elevatorID + ";time:" + time + ";type:sendArrivalInfo;";
+    public String sendFloor(String role, int identifier, String state, int floor, long time) {
+    	String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";floor:" + floor + ";time:" + time + ";type:sendFloor;";
     	Boolean isSent = send(message);
     	String revMessage = receive();
     	return revMessage;
     }
     
-    public String sendFloor(String role, int identifier, String state, int floor, long time) {
-    	String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";floor:" + floor + ";time:" + time + ";type:sendFloor;";
+    /**
+     * Used by Floor subsystem
+     * @return the message replied by the scheduler
+     */
+    public String sendInput(int identifier, String state, int direction, int floor, long time) {
+    	String message = "role:Floor;id:" + identifier + ";state:" + state + ";direction:" + direction + ";floor:" + floor + ";time:" + time + ";type:sendFloor;";
     	Boolean isSent = send(message);
     	String revMessage = receive();
     	return revMessage;
