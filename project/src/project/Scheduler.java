@@ -3,6 +3,10 @@ package project;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import project.utils.Parser;
+import project.utils.Database;
+import project.elevator.*;
+
 public class Scheduler implements Runnable {
 	private Database db = new Database();
 	private Parser parser = new Parser();
@@ -24,10 +28,10 @@ public class Scheduler implements Runnable {
 		parser.parse(message);
 		if(parser.getRole().equals("floor")) {
 			elevator_1.put(message);
-			System.out.println(Thread.currentThread().getName() + " - Send message from floor to elevator - " + new String (message));
-		}else if (parser.getRole().equals("elevator")) {
+			System.out.println(Thread.currentThread().getName() + " - Send message from floor to Elevator - " + new String (message));
+		}else if (parser.getRole().equals("Elevator")) {
 			floor_1.put(message);
-			System.out.println(Thread.currentThread().getName() + " - Send message from elevator to floor - " + new String (message));
+			System.out.println(Thread.currentThread().getName() + " - Send message from Elevator to floor - " + new String (message));
 		}
 	}
 	

@@ -1,4 +1,5 @@
-package project;
+package project.utils;
+
 import java.util.ArrayList;
 
 public class Database{

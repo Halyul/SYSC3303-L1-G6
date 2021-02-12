@@ -1,5 +1,8 @@
 package project;
 
+import project.elevator.Elevator;
+import project.utils.Database;
+
 public class Main {
     /**
      * Start the program.
@@ -10,7 +13,7 @@ public class Main {
         Thread elevatorThread, schedulerThread, floorThread;
         Database db = new Database();
         // Elevator subsystem
-        Elevator elevator = new Elevator(1, 1, db);
+        Elevator elevator = new Elevator(1, 1, 7, 0, false, false, false, db);
         // Floor subsystem
         Floor floor = new Floor(7, 7, db);
         // Scheduler

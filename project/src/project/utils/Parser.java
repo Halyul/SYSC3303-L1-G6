@@ -1,4 +1,4 @@
-package project;
+package project.utils;
 
 public class Parser {
     // role of the subsystem: "scheduler", "elevator", "floor"
@@ -9,13 +9,19 @@ public class Parser {
     // if currentFloor == floor, means the door should open
     // for floor, 
     // if the value is 0, it is meant a status check
-    private int floor;
+    private String state;
     // up -> 1, down -> 0, undefined -> -1
     private int direction;
-    // for elevator, the button pressed in the car, 0 for nothing
-    private int button;
+    // arrival sensor sends which elevator arrives
+    private int elevatorID;
+    // Sender.sendFloor
+    private int floor;
     // time of the message
     private long time;
+    // type of the sender
+    private String type;
+    // error message
+    private String error;
     
     public Parser() {
         
@@ -33,26 +39,41 @@ public class Parser {
      */
     public Boolean parse(byte[] inputMessage) {
         String message = new String(inputMessage);
-        String[] messageArray = message.split(";");
+        logic(message);
+        return true;
+    }
+    
+    public Boolean parse(String inputMessage) {
+    	logic(inputMessage);
+    	return true;
+    }
+    
+    private void logic(String message) {
+    	String[] messageArray = message.split(";");
         for (String item: messageArray) {
             String[] itemArray = item.split(":");
             String key = itemArray[0];
             String value = itemArray[1];
             if (key.equals("role")) {
                 this.role = value;
-            } else if (key.equals("time")) {
-                this.time = Long.parseLong(value);
-            } else if (key.equals("floor")) {
-                this.floor = Integer.parseInt(value);
             } else if (key.equals("identifier")) {
                 this.identifier = Integer.parseInt(value);
-            } else if (key.equals("button")) {
-                this.button = Integer.parseInt(value);
+            } else if (key.equals("state")) {
+                this.state = value;
             } else if (key.equals("direction")) {
                 this.direction = Integer.parseInt(value);
+            } else if (key.equals("elevatorID")) {
+                this.elevatorID = Integer.parseInt(value);
+            } else if (key.equals("floor")) {
+                this.floor = Integer.parseInt(value);
+            } else if (key.equals("time")) {
+                this.time = Long.parseLong(value);
+            } else if (key.equals("type")) {
+                this.type = value;
+            } else if (key.equals("error")) {
+                this.type = value;
             }
         }
-        return true;
     }
     
     /**
@@ -64,11 +85,35 @@ public class Parser {
     }
     
     /**
-     * get the time of the message
+     * get the id of the sender
      * @return as described above
      */
-    public long getTime() {
-        return this.time;
+    public int getIdentifier() {
+        return this.identifier;
+    }
+    
+    /**
+     * get state of the sender
+     * @return as described above
+     */
+    public String getState() {
+        return this.state;
+    }
+    
+    /**
+     * get the direction
+     * @return as described above
+     */
+    public int getDirection() {
+        return this.direction;
+    }
+    
+    /**
+     * get the elevator ID from arrival sensor
+     * @return as described above
+     */
+    public int getElevatorID() {
+        return this.elevatorID;
     }
     
     /**
@@ -80,26 +125,26 @@ public class Parser {
     }
     
     /**
-     * get the id of the sender
+     * get the time of the message
      * @return as described above
      */
-    public int getIdentifier() {
-        return this.identifier;
+    public long getTime() {
+        return this.time;
     }
 
     /**
-     * get the button pressed in the car
+     * get the type of the Sender
      * @return as described above
      */
-    public int getButton() {
-        return this.button;
+    public String getType() {
+        return this.type;
     }
     
     /**
-     * get the direction
+     * get the error if any
      * @return as described above
      */
-    public int getDirection() {
-        return this.direction;
+    public String getError() {
+        return this.error;
     }
 }

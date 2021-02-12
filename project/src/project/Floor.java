@@ -3,10 +3,15 @@ package project;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+
+import project.utils.Parser;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
+import project.utils.Database;
 
 public class Floor implements Runnable {
 	//Current floor Number
