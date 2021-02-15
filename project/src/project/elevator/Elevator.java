@@ -114,21 +114,19 @@ public class Elevator implements Runnable {
 	 * start the elevator
 	 */
 	public void execute() {
-		while(true) {
-			if (this.state == State.Stationary) {
-				this.state = stationary();
-			} else if (this.state == State.OpenDoor) {
-				this.state = openDoor();
-			} else if (this.state == State.CloseDoor) {
-				this.state = closeDoor();
-			} else if (this.state == State.Move) {
-				this.state = move();
-			} else if (this.state == State.Stop) {
-				this.state = stop();
-			} else {
-				error();
-				System.exit(-1);
-			}
+		if (this.state == State.Stationary) {
+			this.state = stationary();
+		} else if (this.state == State.OpenDoor) {
+			this.state = openDoor();
+		} else if (this.state == State.CloseDoor) {
+			this.state = closeDoor();
+		} else if (this.state == State.Move) {
+			this.state = move();
+		} else if (this.state == State.Stop) {
+			this.state = stop();
+		} else {
+			error();
+			System.exit(-1);
 		}
 	}
 	
@@ -155,6 +153,7 @@ public class Elevator implements Runnable {
             	return State.OpenDoor;
             } else if (state.equals("Move")) {
             	int destFloor = this.schedulerCommand.getFloor();
+            	this.destFloor = destFloor;
             	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
             	return State.Move;
             }
@@ -259,12 +258,11 @@ public class Elevator implements Runnable {
         this.speed = 0;
 		this.direction = -1;
         System.out.println(Thread.currentThread().getName() + ": arrived at " + this.destFloor + " floor.");
-		
+        this.schedulerCommand.finished();
         String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Stop", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
         parser.parse(revMsg);
         String state = parser.getState();
         if (state.equals("Received")) {
-        	this.schedulerCommand.finished();
         	return State.OpenDoor;
         } else {
 //        	this.schedulerNotReachable = true;
@@ -322,6 +320,10 @@ public class Elevator implements Runnable {
         return localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
     
+    public void test(String state) {
+    	
+    }
+    
     /**
      * For Unit testing, get current state of the elevator
      * @return
@@ -347,9 +349,9 @@ public class Elevator implements Runnable {
      */
 //    @Override
     public void run() {
-        while(true) {
-            execute();
-        }
+    	while(true) {
+    		execute();
+		}
     }
     
     public static void main(String args[]) {
