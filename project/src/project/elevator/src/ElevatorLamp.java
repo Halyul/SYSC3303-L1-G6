@@ -4,7 +4,7 @@ public class ElevatorLamp {
     // floor number
     private int number;
     // light status
-    private Boolean isOn = false;
+    private boolean isOn = false;
     
     public ElevatorLamp(int number) {
         this.number = number;
@@ -24,5 +24,13 @@ public class ElevatorLamp {
     public void off() {
         this.isOn = false;
         System.out.println(Thread.currentThread().getName() + ": The light of " + this.number + " floor is off.");
+    }
+    
+    /**
+     * Get the current state of the lamp
+     * @return as described above
+     */
+    public boolean getState() {
+    	return this.isOn;
     }
 }

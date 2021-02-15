@@ -21,8 +21,5 @@ public enum State {
     // send: role:Elevator;id:1;error:StuckBetweenFloor;floor:1; (Sender.sendError)
     Stop,
     // send: role:Elevator;id:1;error:Unknown;floor:1; (Sender.sendError)
-    Error,
-    // elevator receive from scheduler: id:1;state:ButtonPressed;floor:1; (Sender.sendFloor) => to State.ButtonPressed if not empty otherwise to State.CloseDoor
-    // the scheduler knows the button pressed in the car
-    //    ButtonPressed
+    Error
 }

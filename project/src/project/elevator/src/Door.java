@@ -10,6 +10,12 @@ public class Door {
     public Door(boolean stuckAtOpen, boolean stuckAtClose) {
         this.stuckAtOpen = stuckAtOpen;
         this.stuckAtClose = stuckAtClose;
+        if (stuckAtOpen) {
+        	this.isOpened = true;
+        }
+        if (stuckAtClose) {
+        	this.isOpened = false;
+        }
     }
     
     /**
@@ -60,7 +66,27 @@ public class Door {
     	}
     }
     
+    /**
+     * get the state of the door
+     * @return as described above
+     */
     public boolean getState() {
     	return this.isOpened;
+    }
+    
+    /**
+     * Check if the door is stuck at open
+     * @return as described above
+     */
+    public boolean getStuckAtOpen() {
+    	return this.stuckAtOpen;
+    }
+    
+    /**
+     * Check if the door is stuck at close
+     * @return as described above
+     */
+    public boolean getStuckAtClose() {
+    	return this.stuckAtClose;
     }
 }

@@ -14,4 +14,12 @@ public class ElevatorButton {
     public void press() {
         
     }
+    
+    /**
+     * Get the number of the button
+     * @return as described above
+     */
+    public int getNumber() {
+    	return this.number;
+    }
 }

@@ -49,7 +49,7 @@ public class Motor {
      * To simulate the down movement of moving between floors
      */
     public void down(double speed) {
-        this.direction = -1;
+        this.direction = 0;
         this.currentSpeed = speed;
         start();
     }
@@ -58,7 +58,7 @@ public class Motor {
      * To simulate the stop
      */
     public void stop() {
-        this.direction = 0;
+        this.direction = -1;
         this.currentSpeed = 0;
     }
     
