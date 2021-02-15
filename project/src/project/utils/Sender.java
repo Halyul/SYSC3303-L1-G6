@@ -5,8 +5,8 @@ import java.net.InetAddress;
 import project.utils.Database;
 
 public class Sender {
-    private InetAddress address;
-    private int port;
+//    private InetAddress address;
+//    private int port;
     // udp retry times
     private int retryTimes;
     
@@ -38,23 +38,23 @@ public class Sender {
      * @return true if the message is successfully send, false otherwise
      */
     
-    public String sendState(String role, int identifier, String state, long time) {
+    public String sendState(String role, int identifier, String state, long time, InetAddress address, int port) {
     	String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";time:" + time + ";type:sendState;";
-    	Boolean isSent = send(message);
+    	Boolean isSent = send(message, address, port);
     	String revMessage = receive();
     	return revMessage;
     }
     
-    public String sendDirection(String role, int identifier, String state, int direction, long time) {
+    public String sendDirection(String role, int identifier, String state, int direction, long time, InetAddress address, int port) {
     	String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";direction:" + direction + ";time:" + time + ";type:sendDirection;";
-    	Boolean isSent = send(message);
+    	Boolean isSent = send(message, address, port);
     	String revMessage = receive();
     	return revMessage;
     }
     
-    public String sendFloor(String role, int identifier, String state, int floor, long time) {
+    public String sendFloor(String role, int identifier, String state, int floor, long time, InetAddress address, int port) {
     	String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";floor:" + floor + ";time:" + time + ";type:sendFloor;";
-    	Boolean isSent = send(message);
+    	Boolean isSent = send(message, address, port);
     	String revMessage = receive();
     	return revMessage;
     }
@@ -63,21 +63,21 @@ public class Sender {
      * Used by Floor subsystem
      * @return the message replied by the scheduler
      */
-    public String sendInput(int identifier, String state, int direction, int floor, long time) {
+    public String sendInput(int identifier, String state, int direction, int floor, long time, InetAddress address, int port) {
     	String message = "role:Floor;id:" + identifier + ";state:" + state + ";direction:" + direction + ";floor:" + floor + ";time:" + time + ";type:sendFloor;";
-    	Boolean isSent = send(message);
+    	Boolean isSent = send(message, address, port);
     	String revMessage = receive();
     	return revMessage;
     }
     
-    public String sendError(String role, int identifier, String error, int floor, long time) {
+    public String sendError(String role, int identifier, String error, int floor, long time, InetAddress address, int port) {
     	String message = "role:" + role + ";id:" + identifier + ";error:" + error + ";floor:" + floor + ";time:" + time + ";type:sendError;";
-    	Boolean isSent = send(message);
+    	Boolean isSent = send(message, address, port);
     	String revMessage = receive();
     	return revMessage;
     }
     
-    private Boolean send(String message) {
+    private Boolean send(String message, InetAddress address, int port) {
     	byte[] messageBytes = message.getBytes();
     	database.put(messageBytes);
         return true;
