@@ -1,15 +1,15 @@
-package project.elevator.src.tests;
+package project.elevator.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
-import project.elevator.src.ElevatorLamp;
+import project.elevator.src.DirectionLamp;
 
-class ElevatorLampTest {
-	private ElevatorLamp e;
+class DirectionLampTest {
+	private DirectionLamp e;
 		
 	@BeforeEach
     public void setUp() throws Exception {
-        this.e = new ElevatorLamp(1);
+        this.e = new DirectionLamp();
     }
 	
 	@Test

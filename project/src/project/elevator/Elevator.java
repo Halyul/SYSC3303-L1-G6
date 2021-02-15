@@ -1,13 +1,11 @@
 package project.elevator;
+import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 
-import project.DirectionLamp;
 import project.elevator.src.*;
-import project.utils.Database;
-import project.utils.Parser;
-import project.utils.Sender;
+import project.utils.*;
 
 public class Elevator implements Runnable {
 	private State state = State.Stationary;
@@ -31,6 +29,9 @@ public class Elevator implements Runnable {
     // simulate stuck between floors
     private boolean stuckBetweenFloors;
     
+    private InetAddress schedulerAddress;
+    private int schedulerPort;
+    
     private Sender sender;
     private Parser parser = new Parser();
     private Door door;
@@ -48,7 +49,7 @@ public class Elevator implements Runnable {
     private DirectionLamp upLamp = new DirectionLamp();
     private DirectionLamp downLamp = new DirectionLamp();
     // listen to scheduler message
-    private volatile ArrayList<byte[]> schedulerCommands = new ArrayList<byte[]>();
+    private volatile DataStruct schedulerCommand = new DataStruct();
     // error message
     private String errorMessage;
 	
@@ -62,7 +63,33 @@ public class Elevator implements Runnable {
      * @param doorStuckAtClose if the door is stuck at close
      * @param stuckBetweenFloors if the elevator is stuck between floors
      * @param db the database
+     * @param schedulerAddress the address of the scheduler
+     * @param port the port of the scheduler
      */
+	public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, InetAddress schedulerAddress, int port) {
+		// needs update here
+		//this.sender = new Sender(db);
+		
+		this.totalGroundFloors = totalGroundFloors;
+		this.totalUndergroundFloors = totalUndergroundFloors;
+		this.identifier = identifier;
+        this.currentFloor = currentFloor;
+        this.door = new Door(doorStuckAtOpen, doorStuckAtClose);
+        this.stuckBetweenFloors = stuckBetweenFloors;
+        for(int i = this.totalUndergroundFloors; i <= this.totalGroundFloors; i++) {
+            if (i != 0) {
+                buttons.add(new ElevatorButton(i));
+                buttonLamps.add(new ElevatorLamp(i));
+                floorLamps.add(new ElevatorLamp(i));
+                arrivalSensors.add(new ArrivalSensor(i));
+            }
+        }
+        floorLamps.get(buttonIndex(this.currentFloor)).on();
+        this.schedulerAddress = schedulerAddress;
+        this.schedulerPort = port;
+	}
+	
+	// legacy code
 	public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, Database db) {
 		this.sender = new Sender(db);
 		
@@ -106,12 +133,13 @@ public class Elevator implements Runnable {
 	}
 	
 	/**
-     * For iteration 1 and 2, Scheduler sends the message to here
+     * Add scheduler command to the list
      * 
      * @param inputMessage the message
      */
     public void put(byte[] inputMessage) {
-        this.schedulerCommands.add(inputMessage);
+    	this.parser.parse(inputMessage);
+        this.schedulerCommand.setState(this.parser.getState(), this.parser.getFloor());
     }
 	
     /**
@@ -119,31 +147,15 @@ public class Elevator implements Runnable {
      * @return next state
      */
 	private State stationary() {
-		// Future notes: when the receiver receive a message, put it into Database
-		// then get it from Database
-		
-		if (this.schedulerCommands.size() != 0) {
-            this.parser.parse(this.schedulerCommands.get(0));
-            this.schedulerCommands.remove(0);
-//            String state = parser.getState();
-//            if (state.equals("Check")) {
-//            	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Check", this.currentFloor, getTime());
-//            } else if (state.equals("OpenDoor")) {
-//            	return State.OpenDoor;
-//            } else if (state.equals("Move")) {
-//            	int destFloor = parser.getFloor();
-//            	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime());
-//            	return State.Move;
-//            }
-            // legacy code
-            int destFloor = parser.getFloor();
-            if (destFloor == this.currentFloor) {
-                // state OpenDoor
+		if (this.schedulerCommand.isWaiting()) {
+            String state = this.schedulerCommand.getState();
+            if (state.equals("Check")) {
+            	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Check", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
+            } else if (state.equals("OpenDoor")) {
             	return State.OpenDoor;
-            } else {
-            	this.destFloor = destFloor;
-            	// state Move
-            	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime());
+            } else if (state.equals("Move")) {
+            	int destFloor = this.schedulerCommand.getFloor();
+            	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
             	return State.Move;
             }
         }
@@ -156,16 +168,14 @@ public class Elevator implements Runnable {
 	 */
 	private State openDoor() {
 		door.open();
-		String revMsg = sender.sendState(this.getClass().getSimpleName(), this.identifier, "OpenDoor", getTime());
-//		parser.parse(revMsg);
-//		String state = parser.getState();
-//		if (state.equals("Received")) {
-//			return State.CloseDoor;
-//		} else {
-//			return State.Error;
-//		}
-		// legacy code
-		return State.CloseDoor;
+		String revMsg = sender.sendState(this.getClass().getSimpleName(), this.identifier, "OpenDoor", getTime(), schedulerAddress, this.schedulerPort);
+		parser.parse(revMsg);
+		String state = parser.getState();
+		if (state.equals("Received")) {
+			return State.CloseDoor;
+		} else {
+			return State.Error;
+		}
 	}
 	
 	/**
@@ -174,21 +184,18 @@ public class Elevator implements Runnable {
 	 */
 	private State closeDoor() {
 		door.close();
-		String revMsg = sender.sendState(this.getClass().getSimpleName(), this.identifier, "CloseDoor", getTime()); // get next step
-//		parser.parse(revMsg);
-//		String state = parser.getState();
-//		if (state.equals("Received")) {
-//			// get the message from the database and update the state
-//			if (state.equals("Move")) {
-//				this.destFloor = parser.getFloor();
-//				return State.Move;
-//			} else if (state.equals("Stationary")) {
-//				return State.Stationary;
-//			}
-//		}
-//		return State.Error;
-		// legacy code
-		return State.Stationary;
+		String revMsg = sender.sendState(this.getClass().getSimpleName(), this.identifier, "CloseDoor", getTime(), schedulerAddress, this.schedulerPort); // get next step
+		parser.parse(revMsg);
+		String state = parser.getState();
+		if (state.equals("Received")) {
+			if (!this.schedulerCommand.isWaiting()) {
+				return State.Stationary;
+			} else {
+				this.destFloor = this.schedulerCommand.getFloor();
+				return State.Move;
+			}
+		}
+		return State.Error;
 	}
 	
 	/**
@@ -225,21 +232,17 @@ public class Elevator implements Runnable {
 		if (this.currentFloor == this.destFloor) {
 			return State.Stop;
 		}
-		String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime());
+		String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
 		parser.parse(revMsg);
 		String state = parser.getState();
-//		get the message from the database and update the state
-//		if (state.equals("Received")) {
-//			// update the dest floor if available
-//			int newDestFloor = parser.getFloor();
-//			this.destFloor = newDestFloor;
-//			return State.Move;
-//		} else {
+		if (state.equals("Received")) {
+			int newDestFloor = this.schedulerCommand.getFloor();
+			this.destFloor = newDestFloor;
+			return State.Move;
+		} else {
 //			this.schedulerNotReachable = true;
-//			return State.Error;
-//		}
-		// legacy code
-		return State.Move;
+			return State.Error;
+		}
 	}
 	
 	/**
@@ -257,17 +260,16 @@ public class Elevator implements Runnable {
 		this.direction = -1;
         System.out.println(Thread.currentThread().getName() + ": arrived at " + this.destFloor + " floor.");
 		
-        String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Stop", this.currentFloor, getTime());
-//        parser.parse(revMsg);
-//        String state = parser.getState();
-//        if (state.equals("Received")) {
-//        	return State.OpenDoor;
-//        } else {
+        String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Stop", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
+        parser.parse(revMsg);
+        String state = parser.getState();
+        if (state.equals("Received")) {
+        	this.schedulerCommand.finished();
+        	return State.OpenDoor;
+        } else {
 //        	this.schedulerNotReachable = true;
-//			return State.Error;
-//        }
-        // legacy code
-        return State.OpenDoor;
+			return State.Error;
+        }
 	}
 	
 	/**
@@ -284,7 +286,7 @@ public class Elevator implements Runnable {
 	        } catch(InterruptedException e) {
 	            Thread.currentThread().interrupt();
 	        }
-			String revMsg = sender.sendError(this.getClass().getSimpleName(), this.identifier, this.errorMessage, this.currentFloor, getTime());
+			String revMsg = sender.sendError(this.getClass().getSimpleName(), this.identifier, this.errorMessage, this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
 			parser.parse(revMsg);
 			String state = parser.getState();
 			if (state.equals("Received")) {

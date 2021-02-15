@@ -17,7 +17,7 @@ public class Sender {
      * @param address
      * @param port
      */
-    public Sender(InetAddress address, int port) {
+    public Sender() {
         
     }
     
@@ -64,8 +64,15 @@ public class Sender {
      * @return the message replied by the scheduler
      */
     public String sendInput(int identifier, String state, int direction, int floor, long time, InetAddress address, int port) {
-    	String message = "role:Floor;id:" + identifier + ";state:" + state + ";direction:" + direction + ";floor:" + floor + ";time:" + time + ";type:sendFloor;";
+    	String message = "role:Floor;id:" + identifier + ";state:" + state + ";direction:" + direction + ";floor:" + floor + ";time:" + time + ";type:sendInput;";
     	Boolean isSent = send(message, address, port);
+    	String revMessage = receive();
+    	return revMessage;
+    }
+    // legacy code
+    public String sendInput(int identifier, String state, int direction, int floor, long time) {
+    	String message = "role:Floor;id:" + identifier + ";state:" + state + ";direction:" + direction + ";floor:" + floor + ";time:" + time + ";type:sendInput;";
+    	Boolean isSent = send(message);
     	String revMessage = receive();
     	return revMessage;
     }
@@ -82,9 +89,15 @@ public class Sender {
     	database.put(messageBytes);
         return true;
     }
+    // legacy code
+    private Boolean send(String message) {
+    	byte[] messageBytes = message.getBytes();
+    	database.put(messageBytes);
+        return true;
+    }
     
     private String receive() {
-    	return "";
+    	return "state:Received;";
     }
 }
 

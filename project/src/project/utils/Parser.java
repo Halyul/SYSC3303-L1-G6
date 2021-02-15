@@ -12,8 +12,6 @@ public class Parser {
     private String state;
     // up -> 1, down -> 0, undefined -> -1
     private int direction;
-    // arrival sensor sends which elevator arrives
-    private int elevatorID;
     // Sender.sendFloor
     private int floor;
     // time of the message
@@ -62,8 +60,6 @@ public class Parser {
                 this.state = value;
             } else if (key.equals("direction")) {
                 this.direction = Integer.parseInt(value);
-            } else if (key.equals("elevatorID")) {
-                this.elevatorID = Integer.parseInt(value);
             } else if (key.equals("floor")) {
                 this.floor = Integer.parseInt(value);
             } else if (key.equals("time")) {
@@ -71,7 +67,7 @@ public class Parser {
             } else if (key.equals("type")) {
                 this.type = value;
             } else if (key.equals("error")) {
-                this.type = value;
+                this.error = value;
             }
         }
     }
@@ -106,14 +102,6 @@ public class Parser {
      */
     public int getDirection() {
         return this.direction;
-    }
-    
-    /**
-     * get the elevator ID from arrival sensor
-     * @return as described above
-     */
-    public int getElevatorID() {
-        return this.elevatorID;
     }
     
     /**

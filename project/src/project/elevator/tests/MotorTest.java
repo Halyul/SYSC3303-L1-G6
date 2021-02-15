@@ -1,4 +1,4 @@
-package project.elevator.src.tests;
+package project.elevator.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
