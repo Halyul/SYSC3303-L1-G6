@@ -20,6 +20,6 @@ public class ElevatorButton {
      * @return as described above
      */
     public int getNumber() {
-    	return this.number;
+        return this.number;
     }
 }

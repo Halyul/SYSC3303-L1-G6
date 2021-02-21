@@ -11,10 +11,10 @@ public class Door {
         this.stuckAtOpen = stuckAtOpen;
         this.stuckAtClose = stuckAtClose;
         if (stuckAtOpen) {
-        	this.isOpened = true;
+            this.isOpened = true;
         }
         if (stuckAtClose) {
-        	this.isOpened = false;
+            this.isOpened = false;
         }
     }
     
@@ -22,9 +22,9 @@ public class Door {
      * To simulate the action of opening the door
      */
     public boolean open() {
-    	if (!stuckAtClose) {
-    		if (!isOpened) {
-    			System.out.println(Thread.currentThread().getName() + ": Door is opening.");
+        if (!stuckAtClose) {
+            if (!isOpened) {
+                System.out.println(Thread.currentThread().getName() + ": Door is opening.");
                 try {
                     Thread.sleep((long) (1000 * this.doorTime / 2));
                 } catch(InterruptedException e) {
@@ -32,23 +32,23 @@ public class Door {
                 }
                 this.isOpened = true;
                 System.out.println(Thread.currentThread().getName() + ": Door opened.");
-    		} else {
-    			System.out.println(Thread.currentThread().getName() + ": Door already opened.");
-    		}
+            } else {
+                System.out.println(Thread.currentThread().getName() + ": Door already opened.");
+            }
             return true;
-    	} else {
-    		System.out.println(Thread.currentThread().getName() + ": Door is unable to open.");
-    		return false;
-    	}
+        } else {
+            System.out.println(Thread.currentThread().getName() + ": Door is unable to open.");
+            return false;
+        }
     }
     
     /**
      * To simulate the action of closing the door
      */
     public boolean close() {
-    	if (!stuckAtOpen) {
-    		if (isOpened) {
-    			System.out.println(Thread.currentThread().getName() + ": Door is closing.");
+        if (!stuckAtOpen) {
+            if (isOpened) {
+                System.out.println(Thread.currentThread().getName() + ": Door is closing.");
                 try {
                     Thread.sleep((long) (1000 * this.doorTime / 2));
                 } catch(InterruptedException e) {
@@ -56,14 +56,14 @@ public class Door {
                 }
                 this.isOpened = false;
                 System.out.println(Thread.currentThread().getName() + ": Door closed.");
-    		} else {
-    			System.out.println(Thread.currentThread().getName() + ": Door already closed.");
-    		}
+            } else {
+                System.out.println(Thread.currentThread().getName() + ": Door already closed.");
+            }
             return true;
-    	} else {
-    		System.out.println(Thread.currentThread().getName() + ": Door is unable to close.");
-    		return false;
-    	}
+        } else {
+            System.out.println(Thread.currentThread().getName() + ": Door is unable to close.");
+            return false;
+        }
     }
     
     /**
@@ -71,7 +71,7 @@ public class Door {
      * @return as described above
      */
     public boolean getState() {
-    	return this.isOpened;
+        return this.isOpened;
     }
     
     /**
@@ -79,7 +79,7 @@ public class Door {
      * @return as described above
      */
     public boolean getStuckAtOpen() {
-    	return this.stuckAtOpen;
+        return this.stuckAtOpen;
     }
     
     /**
@@ -87,6 +87,6 @@ public class Door {
      * @return as described above
      */
     public boolean getStuckAtClose() {
-    	return this.stuckAtClose;
+        return this.stuckAtClose;
     }
 }

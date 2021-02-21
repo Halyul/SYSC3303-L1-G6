@@ -7,28 +7,28 @@ import org.junit.jupiter.api.*;
 import project.elevator.src.Door;
 
 class DoorTest {
-	private Door d;
-	
-	@BeforeEach
+    private Door d;
+    
+    @BeforeEach
     public void setUp() throws Exception {
         this.d = new Door(false, false);
     }
-	
-	@Test
+    
+    @Test
     @DisplayName("Set the open/close of the door should work")   
     public void testSetState() {
-		d.open();
+        d.open();
         assertTrue(d.getState(), "Setting open should work");
         
         d.close();
         assertFalse(d.getState(), "Setting close should work");
     }
-	
-	@Test
+    
+    @Test
     @DisplayName("Set the stuck state of the door should work")   
     public void testSetStuck() {
-		Door door = new Door(true, false);
-		assertTrue(door.getState(), "The door should be open");
+        Door door = new Door(true, false);
+        assertTrue(door.getState(), "The door should be open");
         assertTrue(door.getStuckAtOpen(), "Stuck at open should work");
         door.close();
         assertTrue(door.getState(), "Stuck at open should work");

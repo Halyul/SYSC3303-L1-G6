@@ -7,16 +7,16 @@ import org.junit.jupiter.api.*;
 import project.elevator.src.ElevatorButton;
 
 class ElevatorButtonTest {
-	private ElevatorButton e;
-	
-	@BeforeEach
+    private ElevatorButton e;
+    
+    @BeforeEach
     public void setUp() throws Exception {
         this.e = new ElevatorButton(1);
     }
-	
-	@Test
+    
+    @Test
     public void testNumber() {
-		assertEquals(1, e.getNumber());
+        assertEquals(1, e.getNumber());
     }
 
 }

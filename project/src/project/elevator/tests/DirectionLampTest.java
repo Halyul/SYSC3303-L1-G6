@@ -5,21 +5,21 @@ import org.junit.jupiter.api.*;
 import project.elevator.src.DirectionLamp;
 
 class DirectionLampTest {
-	private DirectionLamp e;
-		
-	@BeforeEach
+    private DirectionLamp e;
+        
+    @BeforeEach
     public void setUp() throws Exception {
         this.e = new DirectionLamp();
     }
-	
-	@Test
+    
+    @Test
     @DisplayName("Set the on/off state of the lamp should work")   
     public void testSetState() {
-		e.on();
-		assertTrue(e.getState(), "Setting the on state should work");
+        e.on();
+        assertTrue(e.getState(), "Setting the on state should work");
 
-		e.off();
-		assertFalse(e.getState(), "Setting the off state should work");
+        e.off();
+        assertFalse(e.getState(), "Setting the off state should work");
     }
 
 }

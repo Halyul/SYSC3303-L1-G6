@@ -31,6 +31,6 @@ public class ElevatorLamp {
      * @return as described above
      */
     public boolean getState() {
-    	return this.isOn;
+        return this.isOn;
     }
 }

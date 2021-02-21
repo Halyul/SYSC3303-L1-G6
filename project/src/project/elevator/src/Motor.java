@@ -74,7 +74,7 @@ public class Motor {
      * @return as described above
      */
     public double getSpeed() {
-    	return this.currentSpeed;
+        return this.currentSpeed;
     }
     
     /**
@@ -82,7 +82,7 @@ public class Motor {
      * @return as described above
      */
     public int getDirection() {
-    	return this.direction;
+        return this.direction;
     }
     
     /**
