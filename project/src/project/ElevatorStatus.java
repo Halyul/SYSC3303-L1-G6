@@ -5,6 +5,9 @@
  */
 
 package project;
+import project.utils.Sender;
+
+import java.net.InetAddress;
 import java.util.ArrayList;
 
 public class ElevatorStatus {
@@ -15,6 +18,7 @@ public class ElevatorStatus {
     private ArrayList<Integer> nextActionList = new ArrayList<Integer>();
 
     public ElevatorStatus() {
+        this.currentStatus = "Idle";
         this.getStates();
     }
 
@@ -85,5 +89,13 @@ public class ElevatorStatus {
         int nextStop = this.nextActionList.get(0);
         this.nextActionList.remove(0);
         return nextStop;
+    }
+
+    public boolean actionListEmpty(){
+        return this.nextActionList.size() == 0;
+    }
+
+    public boolean isIdle(){
+        return this.currentStatus.equals("Idle");
     }
 }
