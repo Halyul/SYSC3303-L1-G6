@@ -2,6 +2,7 @@ package project;
 
 import project.elevator.Elevator;
 import project.scheduler.Scheduler;
+import project.floor.Floor;
 import project.utils.Database;
 
 public class Main {
