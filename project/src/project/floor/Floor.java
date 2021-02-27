@@ -164,13 +164,15 @@ public class Floor implements Runnable {
 				int dir = 0;
 				if(individualIns[2].equals("Up")) {	//If passengers wants to go up
 					dir = 1;
-					this.upButton.on();
+					if(this.floorNumber != topFloor)
+						this.upButton.on();
 					String floorAndDir = "Floor: "+ individualIns[1] + ", Up" ;
 					storeButtons(floorAndDir);
 				}
 				else if(individualIns[2].equals("Down")) { //If passengers wants to go down
 					dir = 0;
-					this.downButton.on();
+					if(this.floorNumber != 0)
+						this.downButton.on();
 					String floorAndDir = "Floor: "+ individualIns[1] + ", Down";
 					storeButtons(floorAndDir);
 				}
