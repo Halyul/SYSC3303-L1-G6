@@ -54,7 +54,7 @@ public class Parser {
             String value = itemArray[1];
             if (key.equals("role")) {
                 this.role = value;
-            } else if (key.equals("identifier")) {
+            } else if (key.equals("id")) {
                 this.identifier = Integer.parseInt(value);
             } else if (key.equals("state")) {
                 this.state = value;
