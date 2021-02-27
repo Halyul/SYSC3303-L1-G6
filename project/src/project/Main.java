@@ -17,7 +17,7 @@ public class Main {
         // Elevator subsystem
         Elevator elevator = new Elevator(1, 1, 7, 0, false, false, false, db);
         // Floor subsystem
-        Floor floor = new Floor(7, 7, db);
+        Floor floor = new Floor(1, 7, db);
         // Scheduler
         Scheduler scheduler = new Scheduler(db, elevator, floor);
 
