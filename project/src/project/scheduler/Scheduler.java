@@ -6,17 +6,18 @@
 
 package project.scheduler;
 
+import java.util.ArrayList;
+import java.time.ZoneOffset;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 
+import project.Floor;
+import project.utils.Sender;
 import project.utils.Parser;
 import project.utils.Database;
-import project.utils.Sender;
-import project.Floor;
+
 import project.elevator.*;
-import project.scheduler.src.ElevatorStatus;
+import project.scheduler.src.*;
 
 public class Scheduler implements Runnable {
     private Database db = new Database();
@@ -25,6 +26,8 @@ public class Scheduler implements Runnable {
     private int totalFloorNumber;
     private Elevator elevator_1;  // need to remove later
     private Floor floor_1;    // need to remove later
+    private SchedulerState schedulerState = SchedulerState.WaitMessage;
+    private Parser parser = new Parser();
 
     public Scheduler(Database db, int totalElevatorNumber, int totalFloorNumber) {
         this.db = db;
@@ -45,23 +48,26 @@ public class Scheduler implements Runnable {
      * Forward the message to correct subsystem
      *
      */
-    private void startSchedule() throws Exception {
-        Parser parser = getNextMessage();
-        if (parser.getRole().equals("Floor")) {                    // Message from Floor
-            this.instructElevator(parser);
-        } else if (parser.getRole().equals("Elevator")) {        // Message from Elevator
-            this.updateElevatorStatus(parser);
-            this.updateFloorSubsystem(parser);
+    private void execute() throws Exception {
+        if(this.schedulerState == SchedulerState.WaitMessage) {
+            getNextMessage();
+        } else if(this.schedulerState == SchedulerState.InstructElevator){
+            this.instructElevator();
+            this.schedulerState = SchedulerState.WaitMessage;
+        } else if(this.schedulerState == SchedulerState.UpdateSubsystem){
+            this.updateElevatorStatus();
+            this.updateFloorSubsystem();
+            this.schedulerState = SchedulerState.WaitMessage;
         }
     }
-
+    
     /**
      * Send instruction to elevator
      *
      */
-    private void instructElevator(Parser parser) throws Exception {
-        int userLocation = parser.getIdentifier();
-        int userDest = parser.getFloor();
+    private void instructElevator() throws Exception {
+        int userLocation = this.parser.getIdentifier();
+        int userDest = this.parser.getFloor();
         int distance = this.totalFloorNumber;
         int elevatorToMove = 0;
         ElevatorStatus e = this.elevatorStatus.get(elevatorToMove);
@@ -82,10 +88,10 @@ public class Scheduler implements Runnable {
      * Sending update information to elevator subsystem
      *
      */
-    private void updateElevatorStatus(Parser parser) throws Exception {
-        int elevatorID = parser.getIdentifier() - 1;    //Elevator start from 1 in Elevator class
+    private void updateElevatorStatus() throws Exception {
+        int elevatorID = this.parser.getIdentifier() - 1;    //Elevator start from 1 in Elevator class
         ElevatorStatus currentElevatorStatus = elevatorStatus.get(elevatorID);
-        if(currentElevatorStatus.getCurrentAction() == parser.getFloor()){ // Elevator Stop at the target floor
+        if(currentElevatorStatus.getCurrentAction() == this.parser.getFloor()){ // Elevator Stop at the target floor
             if(!currentElevatorStatus.actionListEmpty()) {   // Still got action to do
                 int nextFloor = currentElevatorStatus.popNextStop();    // get next action
 
@@ -98,8 +104,8 @@ public class Scheduler implements Runnable {
                 currentElevatorStatus.setCurrentStatus("Idle");
             }
         }
-        currentElevatorStatus.setCurrentLocation(parser.getFloor());
-        currentElevatorStatus.setCurrentStatus(parser.getState());
+        currentElevatorStatus.setCurrentLocation(this.parser.getFloor());
+        currentElevatorStatus.setCurrentStatus(this.parser.getState());
         elevatorStatus.set(elevatorID, currentElevatorStatus);  // Update Local Elevator Status
     }
 
@@ -107,20 +113,25 @@ public class Scheduler implements Runnable {
      * Sending update information to Floor subsystem
      *
      */
-    private void updateFloorSubsystem(Parser parser) throws Exception {
-        sender.sendDirection("scheduler", 0, "Move", parser.getDirection(), this.getTime(), InetAddress.getLocalHost(), 12000);
+    private void updateFloorSubsystem() throws Exception {
+        sender.sendDirection("scheduler", 0, "Move", this.parser.getDirection(), this.getTime(), InetAddress.getLocalHost(), 12000);
     }
 
     /**
      * Get next message from database, then parse the message using parser, return the parser
      *
-     * @return parser: Parser
      */
-    private Parser getNextMessage() {
-        byte[] inputmessage = this.db.get();
-        Parser parser = new Parser();
-        parser.parse(inputmessage);
-        return parser;
+    private void getNextMessage() {
+        byte[] inputMessage = this.db.get();
+        this.parser.parse(inputMessage);
+        if(this.parser.getRole().equals("Floor")){
+            this.schedulerState = SchedulerState.InstructElevator;
+        }else if (this.parser.getRole().equals("Elevator")){
+            this.schedulerState = SchedulerState.UpdateSubsystem;
+        }else{
+            // ignore message
+            this.schedulerState = SchedulerState.WaitMessage;
+        }
     }
 
     /**
@@ -130,9 +141,10 @@ public class Scheduler implements Runnable {
     public void run(){
         while(true) {
             try {
-                this.startSchedule();
+                this.execute();
             } catch (Exception e) {
                 e.printStackTrace();
+                System.exit(1);
             }
         }
     }
