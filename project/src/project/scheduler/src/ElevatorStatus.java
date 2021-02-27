@@ -4,7 +4,7 @@
   This is a class to record elevator stats locally for Scheduler
  */
 
-package project;
+package project.scheduler.src;
 import project.utils.Sender;
 
 import java.net.InetAddress;

@@ -4,7 +4,7 @@
   This is the class for scheduler. The scheduler receive messages from Elevator/floor subsystem and deal with them.
  */
 
-package project;
+package project.scheduler;
 
 import java.net.InetAddress;
 import java.time.LocalDateTime;
@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import project.utils.Parser;
 import project.utils.Database;
 import project.utils.Sender;
+import project.Floor;
 import project.elevator.*;
+import project.scheduler.src.ElevatorStatus;
 
 public class Scheduler implements Runnable {
     private Database db = new Database();
