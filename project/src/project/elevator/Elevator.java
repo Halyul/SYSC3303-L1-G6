@@ -146,28 +146,28 @@ public class Elevator implements Runnable {
      */
     private State stationary() {
         if (this.schedulerCommand.isWaiting()) {
-//            String state = this.schedulerCommand.getState();
-//            if (state.equals("Check")) {
-//                String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Check", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
-//            } else if (state.equals("OpenDoor")) {
-//                return State.OpenDoor;
-//            } else if (state.equals("Move")) {
-//                int destFloor = this.schedulerCommand.getFloor();
-//                this.destFloor = destFloor;
-//                String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
-//                return State.Move;
-//            }
-        	// legacy code
-            int destFloor = parser.getFloor();
-            if (destFloor == this.currentFloor) {
-                // state OpenDoor
-            	return State.OpenDoor;
-            } else {
-            	this.destFloor = destFloor;
-            	// state Move
-            	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
-            	return State.Move;
+            String state = this.schedulerCommand.getState();
+            if (state.equals("Check")) {
+                String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Check", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
+            } else if (state.equals("OpenDoor")) {
+                return State.OpenDoor;
+            } else if (state.equals("Move")) {
+                int destFloor = this.schedulerCommand.getFloor();
+                this.destFloor = destFloor;
+                String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
+                return State.Move;
             }
+        	// legacy code
+//            int destFloor = parser.getFloor();
+//            if (destFloor == this.currentFloor) {
+//                // state OpenDoor
+//            	return State.OpenDoor;
+//            } else {
+//            	this.destFloor = destFloor;
+//            	// state Move
+//            	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
+//            	return State.Move;
+//            }
         }
         return State.Stationary;
     }
