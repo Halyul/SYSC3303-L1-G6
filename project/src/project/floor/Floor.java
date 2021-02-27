@@ -79,8 +79,16 @@ public class Floor implements Runnable {
             	int arraySize = upDownButtons.size();
             	for(int i = 0; i < arraySize; i++) {
             		if(this.upDownButtons.get(i).startsWith("Floor: "+this.floorNumber)) {
-            			this.upButton.off();
-            			this.downButton.off();
+            			if(this.floorNumber != topFloor && this.floorNumber != 0) {
+                			this.upButton.off();
+                			this.downButton.off();
+            			}
+            			else if(this.floorNumber == topFloor) {
+            				this.downButton.off();
+            			}
+            			else if(this.floorNumber == 0) {
+            				this.upButton.off();
+            			}
             			this.upDownButtons.remove(i);
             			break;
             		}
