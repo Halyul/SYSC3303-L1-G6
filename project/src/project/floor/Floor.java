@@ -110,25 +110,25 @@ public class Floor implements Runnable {
     }
     
     
-    private void storeButtons(String floorAndDirection) {
-		if(this.upDownButtons.size() == 0) {
-			this.upDownButtons.add(floorAndDirection);
-		}
-		else {
-			Boolean duplicate = false;
-			int i = 0;
-			while(!duplicate) {
-				if(this.upDownButtons.get(i).equals(floorAndDirection)) {
-					duplicate = true;
-				}
-				else if(i == this.upDownButtons.size()) {
-					this.upDownButtons.add(floorAndDirection);
-					duplicate = true;
-				}
-				i++;
-			}
-		}
-    }
+//    private void storeButtons(String floorAndDirection) {
+//		if(this.upDownButtons.size() == 0) {
+//			this.upDownButtons.add(floorAndDirection);
+//		}
+//		else {
+//			Boolean duplicate = false;
+//			int i = 0;
+//			while(!duplicate) {
+//				if(this.upDownButtons.get(i).equals(floorAndDirection)) {
+//					duplicate = true;
+//				}
+//				else if(i == this.upDownButtons.size()) {
+//					this.upDownButtons.add(floorAndDirection);
+//					duplicate = true;
+//				}
+//				i++;
+//			}
+//		}
+//    }
     
 	/**
      * For iteration 1, Scheduler sends the message to here
@@ -173,17 +173,21 @@ public class Floor implements Runnable {
 				int dir = 0;
 				if(individualIns[2].equals("Up")) {	//If passengers wants to go up
 					dir = 1;
-					if(this.floorNumber != topFloor)
-						this.upButton.on();
-					String floorAndDir = "Floor: "+ individualIns[1] + ", Up" ;
-					storeButtons(floorAndDir);
+					if(this.floorNumber != topFloor) {
+						if(!this.upButton.getState())
+							this.upButton.on();
+					}
+//					String floorAndDir = "Floor: "+ individualIns[1] + ", Up" ;
+//					storeButtons(floorAndDir);
 				}
 				else if(individualIns[2].equals("Down")) { //If passengers wants to go down
 					dir = 0;
-					if(this.floorNumber != 0)
-						this.downButton.on();
-					String floorAndDir = "Floor: "+ individualIns[1] + ", Down";
-					storeButtons(floorAndDir);
+					if(this.floorNumber != 0) {
+						if(!this.downButton.getState())
+							this.downButton.on();
+					}
+//					String floorAndDir = "Floor: "+ individualIns[1] + ", Down";
+//					storeButtons(floorAndDir);
 				}
 				int currentFloor = Integer.parseInt(individualIns[1]); // get the floor the user currently at
 				int destFloor = Integer.parseInt(individualIns[3]);	//Stores destination floor 
