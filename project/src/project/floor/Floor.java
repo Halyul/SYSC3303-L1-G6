@@ -40,20 +40,20 @@ public class Floor implements Runnable {
 		this.sender = new Sender(database);
 		//If bottom floor, initialize one set of up lamps and buttons
 		if(floorNumber == 0) {
-			FloorButton upButton = new FloorButton();
+			this.upButton = new FloorButton();
 		}
 		//If top floor, initialize one set of down lamps and buttons
 		else if(floorNumber == topFloor) {
-			FloorButton downButton = new FloorButton();
+			this.downButton = new FloorButton();
 		}
 		//else, initialize up/down lamps and buttons
 		else {
-			FloorButton upButton = new FloorButton();
-			FloorButton downButton = new FloorButton();
+			this.upButton = new FloorButton();
+			this.downButton = new FloorButton();
 		}
 		
-		DirectionLamp upLamp = new DirectionLamp();
-		DirectionLamp downLamp = new DirectionLamp();
+		this.upLamp = new DirectionLamp();
+		this.downLamp = new DirectionLamp();
 	}
     /**
      * @see java.lang.Runnable#run()
