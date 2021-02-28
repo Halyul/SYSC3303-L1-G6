@@ -27,13 +27,17 @@ public class Floor implements Runnable {
 	private Parser parser = new Parser();
 	
 	private volatile ArrayList<byte[]> messages = new ArrayList<byte[]>();
-	private volatile ArrayList<String> upDownButtons = new ArrayList<String>();
 	private FloorButton upButton;
 	private FloorButton downButton;
 	private DirectionLamp upLamp;
 	private DirectionLamp downLamp;
 
-	
+	/**
+	 * Floor constructor 
+	 * @param floorNumber number of the current floor
+	 * @param topFloor number of the top floor 
+	 * @param database database where messages are sent
+	 */
 	public Floor(int floorNumber, int topFloor, Database database) {
 		this.floorNumber = floorNumber;
 		this.topFloor = topFloor;
@@ -64,10 +68,9 @@ public class Floor implements Runnable {
 			get();
 		}
 	}
-	
 
 	/**
-	 * Get message from the scheduler
+	 * Get receives messages from the scheduler
 	 */
     private void get() {
     	//If there is a message
@@ -75,60 +78,40 @@ public class Floor implements Runnable {
     		this.parser.parse(messages.get(0)); // Parse message
             messages.remove(0);
             //if elevator reaches destination floor
-            if (parser.getRole().equals("Elevator") && parser.getState().equals("Stop") && parser.getFloor() == this.floorNumber) {
-            	int arraySize = upDownButtons.size();
-            	for(int i = 0; i < arraySize; i++) {
-            		if(this.upDownButtons.get(i).startsWith("Floor: "+this.floorNumber)) {
-            			if(this.floorNumber != topFloor && this.floorNumber != 0) {
-                			this.upButton.off();
-                			this.downButton.off();
-            			}
-            			else if(this.floorNumber == topFloor) {
-            				this.downButton.off();
-            			}
-            			else if(this.floorNumber == 0) {
-            				this.upButton.off();
-            			}
-            			this.upDownButtons.remove(i);
-            			break;
-            		}
-            	}
-            }
-            if(parser.getDirection() == 1) {
-            	upLamp.on();
-            	downLamp.off();
-            }
-            else if(parser.getDirection() == 0) {
-            	upLamp.off();
-            	downLamp.on();
-            }
-            else {
-            	upLamp.off();
-            	downLamp.off();
-            }
-    	}
+        if (parser.getRole().equals("Elevator") && parser.getState().equals("Stop") && parser.getFloor() == this.floorNumber) {
+			//If the floor is neither the top or bottom floor
+        	if(this.floorNumber != topFloor && this.floorNumber != 0) {
+        		//Turn off both button lights
+    			this.upButton.off();
+    			this.downButton.off();
+			}
+        	//else if it is the top floor,
+			else if(this.floorNumber == topFloor) {
+				//turn off downButton light
+				this.downButton.off();
+			}
+        	//elseif it is the bottom floor
+			else if(this.floorNumber == 0) {
+				//turn off upButton light
+				this.upButton.off();
+			}
+		}
+        //Following ifs set the direction of the DirectionLamp
+        if(parser.getDirection() == 1) {
+        	upLamp.on();
+        	downLamp.off();
+        }
+        else if(parser.getDirection() == 0) {
+        	upLamp.off();
+        	downLamp.on();
+        }
+        else {
+        	upLamp.off();
+        	downLamp.off();
+        }
     }
+}
     
-    
-//    private void storeButtons(String floorAndDirection) {
-//		if(this.upDownButtons.size() == 0) {
-//			this.upDownButtons.add(floorAndDirection);
-//		}
-//		else {
-//			Boolean duplicate = false;
-//			int i = 0;
-//			while(!duplicate) {
-//				if(this.upDownButtons.get(i).equals(floorAndDirection)) {
-//					duplicate = true;
-//				}
-//				else if(i == this.upDownButtons.size()) {
-//					this.upDownButtons.add(floorAndDirection);
-//					duplicate = true;
-//				}
-//				i++;
-//			}
-//		}
-//    }
     
 	/**
      * For iteration 1, Scheduler sends the message to here
@@ -174,24 +157,25 @@ public class Floor implements Runnable {
 				if(individualIns[2].equals("Up")) {	//If passengers wants to go up
 					dir = 1;
 					if(this.floorNumber != topFloor) {
-						if(!this.upButton.getState())
+						if(!this.upButton.getState()) {
+							//Checks if the button is already on
 							this.upButton.on();
+						}
+						
 					}
-//					String floorAndDir = "Floor: "+ individualIns[1] + ", Up" ;
-//					storeButtons(floorAndDir);
 				}
 				else if(individualIns[2].equals("Down")) { //If passengers wants to go down
 					dir = 0;
 					if(this.floorNumber != 0) {
-						if(!this.downButton.getState())
+						if(!this.downButton.getState()) {	//Checks if the button is already on
 							this.downButton.on();
+						}
+
 					}
-//					String floorAndDir = "Floor: "+ individualIns[1] + ", Down";
-//					storeButtons(floorAndDir);
 				}
 				int currentFloor = Integer.parseInt(individualIns[1]); // get the floor the user currently at
 				int destFloor = Integer.parseInt(individualIns[3]);	//Stores destination floor 
-				SimpleDateFormat time = new SimpleDateFormat("HH:MM:SS.S");		//Used for epoch time conversion
+				SimpleDateFormat time = new SimpleDateFormat("HH:MM:SS.S");	//Used for epoch time conversion
 				//Try parsing the time and converting it to epoch time
 				try {
 					Date currTime = time.parse(individualIns[0]);
