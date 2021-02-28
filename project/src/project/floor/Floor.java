@@ -1,0 +1,196 @@
+package project.floor;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+import project.floor.src.*;
+import project.utils.Parser;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+
+import project.utils.*;
+
+public class Floor implements Runnable {
+	//Current floor Number
+	private int floorNumber;
+	//Number of the top floor
+	private int topFloor;
+	
+	private Sender sender;
+	private Parser parser = new Parser();
+	
+	private volatile ArrayList<byte[]> messages = new ArrayList<byte[]>();
+	private FloorButton upButton;
+	private FloorButton downButton;
+	private DirectionLamp upLamp;
+	private DirectionLamp downLamp;
+
+	/**
+	 * Floor constructor 
+	 * @param floorNumber number of the current floor
+	 * @param topFloor number of the top floor 
+	 * @param database database where messages are sent
+	 */
+	public Floor(int floorNumber, int topFloor, Database database) {
+		this.floorNumber = floorNumber;
+		this.topFloor = topFloor;
+		this.sender = new Sender(database);
+		//If bottom floor, initialize one set of up lamps and buttons
+		if(floorNumber == 0) {
+			this.upButton = new FloorButton();
+		}
+		//If top floor, initialize one set of down lamps and buttons
+		else if(floorNumber == topFloor) {
+			this.downButton = new FloorButton();
+		}
+		//else, initialize up/down lamps and buttons
+		else {
+			this.upButton = new FloorButton();
+			this.downButton = new FloorButton();
+		}
+		
+		this.upLamp = new DirectionLamp();
+		this.downLamp = new DirectionLamp();
+	}
+    /**
+     * @see java.lang.Runnable#run()
+     */
+	public void run() {
+		ReadInput("floorInput.txt");
+		while(true) {
+			get();
+		}
+	}
+
+	/**
+	 * Get receives messages from the scheduler
+	 */
+    private void get() {
+    	//If there is a message
+    	if (this.messages.size() != 0) {
+    		this.parser.parse(messages.get(0)); // Parse message
+            messages.remove(0);
+            //if elevator reaches destination floor
+        if (parser.getRole().equals("Elevator") && parser.getState().equals("Stop") && parser.getFloor() == this.floorNumber) {
+			//If the floor is neither the top or bottom floor
+        	if(this.floorNumber != topFloor && this.floorNumber != 0) {
+        		//Turn off both button lights
+    			this.upButton.off();
+    			this.downButton.off();
+			}
+        	//else if it is the top floor,
+			else if(this.floorNumber == topFloor) {
+				//turn off downButton light
+				this.downButton.off();
+			}
+        	//elseif it is the bottom floor
+			else if(this.floorNumber == 0) {
+				//turn off upButton light
+				this.upButton.off();
+			}
+		}
+        //Following ifs set the direction of the DirectionLamp
+        if(parser.getDirection() == 1) {
+        	upLamp.on();
+        	downLamp.off();
+        }
+        else if(parser.getDirection() == 0) {
+        	upLamp.off();
+        	downLamp.on();
+        }
+        else {
+        	upLamp.off();
+        	downLamp.off();
+        }
+    }
+}
+    
+    
+	/**
+     * For iteration 1, Scheduler sends the message to here
+     * 
+     * @param inputMessage the message
+     */
+    public void put(byte[] inputMessage) {
+    	this.messages.add(inputMessage);
+    }
+    /**
+     * Send the message to the Scheduler
+     * @param time the time from the input file in epoch seconds
+     * @param currentFloor current floor number
+     * @param direction the direction the elevator is going (up/down)
+     * @param CarButton The destination floor chosen by the passenger
+     * @param state the status of the floor 
+     */
+    private void send(long time, int currentFloor, int direction, int CarButton, String state) {
+		Boolean isSent = false;
+		// Haoyu Xu: updated Sender
+		// role:Floor;id:<current floor number>;state:<your own definition>;direction:<1/up or 0/down>;floor:<button pressed in the car>;time:<time>
+		String revMsg = sender.sendInput(currentFloor, state, direction, CarButton, time);
+//		while(!isSent) {
+//			isSent = sender.send("floor", this.floorNumber, this.floorNumber, direction, CarButton, time);
+//		}
+	}
+	
+    /**
+     * Reads an input file containing the time, floor, direction and destination 
+     * of a passenger calling an elevator from a floor
+     * @param inputFile name of the input file
+     */
+	public void ReadInput(String inputFile) {
+		//Try opening the file of name inputFile
+		try {
+			File inFile = new File(inputFile);
+			Scanner inReader = new Scanner(inFile);
+			//While the text file has another line
+			while (inReader.hasNextLine()) {		
+				String ins = inReader.nextLine();		//Goes to the next line, storing the current line in ins
+				String[] individualIns = ins.split("\\s+");		//Split the instructions at whitespace characters
+				int dir = 0;
+				if(individualIns[2].equals("Up")) {	//If passengers wants to go up
+					dir = 1;
+					if(this.floorNumber != topFloor) {
+						if(!this.upButton.getState()) {
+							//Checks if the button is already on
+							this.upButton.on();
+						}
+						
+					}
+				}
+				else if(individualIns[2].equals("Down")) { //If passengers wants to go down
+					dir = 0;
+					if(this.floorNumber != 0) {
+						if(!this.downButton.getState()) {	//Checks if the button is already on
+							this.downButton.on();
+						}
+
+					}
+				}
+				int currentFloor = Integer.parseInt(individualIns[1]); // get the floor the user currently at
+				int destFloor = Integer.parseInt(individualIns[3]);	//Stores destination floor 
+				SimpleDateFormat time = new SimpleDateFormat("HH:MM:SS.S");	//Used for epoch time conversion
+				//Try parsing the time and converting it to epoch time
+				try {
+					Date currTime = time.parse(individualIns[0]);
+					LocalDate currDate = LocalDate.now();
+					LocalTime baseTime = LocalTime.MIDNIGHT;
+					long epochTime = currTime.getTime() + currDate.toEpochSecond(baseTime, ZoneOffset.UTC);
+					send(epochTime, currentFloor, dir, destFloor, "Reading");
+				}	catch(ParseException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			inReader.close();
+		}	catch (FileNotFoundException e) {
+			System.out.println(Thread.currentThread().getName() + ": File not found");
+		}
+	}
+}

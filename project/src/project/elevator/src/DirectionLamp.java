@@ -1,4 +1,4 @@
-package project;
+package project.elevator.src;
 
 public class DirectionLamp {
     // light status
@@ -20,5 +20,13 @@ public class DirectionLamp {
      */
     public void off() {
         this.isOn = false;
+    }
+    
+    /**
+     * Get the current state of the lamp
+     * @return as described above
+     */
+    public boolean getState() {
+        return this.isOn;
     }
 }

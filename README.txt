@@ -1,17 +1,9 @@
 SYSC3303-L1-G6
-Iteration 1
+Iteration 2
 
 Files included:
 - Source Code:
-    - project/src/project/Database.java
-    - project/src/project/DirectionLamp.java
-    - project/src/project/Elevator.java
-    - project/src/project/Floor.java
-    - project/src/project/Main.java
-    - project/src/project/Parser.java
-    - project/src/project/Scheduler.java
-    - project/src/project/Sender.java
-    - project/floorInput.txt
+    - project/*
 
 - Eclipse Files:
     - project/.settings/org.eclipse.jdt.core.prefs
@@ -20,15 +12,7 @@ Files included:
     - project/.project
 
 - UML:
-    - Documentation/class_diagram.JPG
-    - Documentation/seq_diagram_database.PNG
-    - Documentation/seq_diagram_directionlamp.PNG
-    - Documentation/seq_diagram_elevator.JPG
-    - Documentation/seq_diagram_floor.JPG
-    - Documentation/seq_diagram_main.PNG
-    - Documentation/seq_diagram_parser.JPG
-    - Documentation/seq_diagram_schduler.JPG
-    - Documentation/seq_diagram_sender.PNG
+    - Documentation/Iteration2/*
 
 Setup instructions:
     - This program runs on Eclipse v4.18.0
@@ -36,7 +20,7 @@ Setup instructions:
     - Run "Main.java" (to test the communication between subsystems)
 
 Responsibilities:
-    - Zijun Hu: Database.java, Scheduler.java
-    - Haoyu Xu: Elevator.java, Main.java, Parser.java, Sender.java
-    - Bingtao Liu: UMLs
-    - Lyam Milbury: DirectionLamp.java, Floor.java, floorInput.txt
+    - Zijun Hu: project.scheduler.*, state_diagram_scheduler.jpg
+    - Haoyu Xu: project.elevator.*, seq_diagram.png, state_diagram_elevator.png
+    - Bingtao Liu: project.scheduler.*, class_diagram_scheduler.png
+    - Lyam Milbury: project.floor.*, class_diagram_elevator.png, class_diagram_floor.png
