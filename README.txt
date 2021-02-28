@@ -22,5 +22,5 @@ Setup instructions:
 Responsibilities:
     - Zijun Hu: project.scheduler.*, state_diagram_scheduler.jpg
     - Haoyu Xu: project.elevator.*, seq_diagram.png, state_diagram_elevator.png
-    - Bingtao Liu: project.scheduler.*, UMLs
-    - Lyam Milbury: project.floor.*, class_diagram_elevator.png
+    - Bingtao Liu: project.scheduler.*, class_diagram_scheduler.png
+    - Lyam Milbury: project.floor.*, class_diagram_elevator.png, class_diagram_floor.png
