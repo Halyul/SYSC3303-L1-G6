@@ -11,14 +11,13 @@ import java.time.ZoneOffset;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 
-import project.floor.Floor;
+import project.Floor;
 import project.utils.Sender;
 import project.utils.Parser;
 import project.utils.Database;
 
 import project.elevator.*;
 import project.scheduler.src.*;
-import project.floor.*;
 
 public class Scheduler implements Runnable {
     private Database db = new Database();
@@ -27,11 +26,12 @@ public class Scheduler implements Runnable {
     private int totalFloorNumber;
     private Elevator elevator_1;  // need to remove later
     private Floor floor_1;    // need to remove later
-    private SchedulerState schedulerState = SchedulerState.WaitMessage;
+    private SchedulerState schedulerState;
     private Parser parser = new Parser();
 
     public Scheduler(Database db, int totalElevatorNumber, int totalFloorNumber) {
         this.db = db;
+        this.schedulerState = SchedulerState.WaitMessage;
         for (int i = 1; i <= totalElevatorNumber; i++) {
             elevatorStatus.add(new ElevatorStatus());
         }
@@ -40,6 +40,7 @@ public class Scheduler implements Runnable {
 
     public Scheduler(Database db, Elevator elevator, Floor floor) {// need to remove later
         this.db = db;
+        this.schedulerState = SchedulerState.WaitMessage;
         elevatorStatus.add(new ElevatorStatus());
         this.elevator_1 = elevator;
         this.floor_1 = floor;
@@ -47,20 +48,21 @@ public class Scheduler implements Runnable {
 
     /**
      * Forward the message to correct subsystem
-     *
      */
-    private void execute() throws Exception {
+    public void execute() throws Exception {
         if(this.schedulerState == SchedulerState.WaitMessage) {
             getNextMessage();
-        } else if(this.schedulerState == SchedulerState.InstructElevator){
+        } else if(this.schedulerState == SchedulerState.InstructElevator) {
             this.instructElevator();
             this.schedulerState = SchedulerState.WaitMessage;
-        } else if(this.schedulerState == SchedulerState.UpdateSubsystem){
+        } else if(this.schedulerState == SchedulerState.UpdateSubsystem) {
             this.updateElevatorStatus();
             this.updateFloorSubsystem();
             this.schedulerState = SchedulerState.WaitMessage;
         }
     }
+
+
     
     /**
      * Send instruction to elevator
@@ -148,6 +150,13 @@ public class Scheduler implements Runnable {
                 System.exit(1);
             }
         }
+    }
+
+    /**
+     *
+     */
+    public SchedulerState getState(){
+        return this.schedulerState;
     }
 
     /**

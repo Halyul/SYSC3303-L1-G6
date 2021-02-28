@@ -67,12 +67,12 @@ public class ElevatorStatus {
         return this.currentLocation;
     }
 
-    /**
-     * Get elevator's direction (Ex. Up or down)
-     */
-    public int getDirection() {
-        return this.currentLocation;
-    }
+//    /**
+//     * Get elevator's direction (Ex. Up or down)
+//     */
+//    public int getDirection() {
+//        return this.currentDirection;
+//    }
 
 
     /**
