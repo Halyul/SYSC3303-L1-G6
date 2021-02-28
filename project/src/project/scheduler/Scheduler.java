@@ -11,7 +11,7 @@ import java.time.ZoneOffset;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 
-import project.Floor;
+import project.floor.Floor;
 import project.utils.Sender;
 import project.utils.Parser;
 import project.utils.Database;

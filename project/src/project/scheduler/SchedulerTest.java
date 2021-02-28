@@ -6,7 +6,7 @@ package project.scheduler;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import project.Floor;
+import project.floor.Floor;
 import project.elevator.Elevator;
 import project.scheduler.src.SchedulerState;
 import project.utils.Database;
