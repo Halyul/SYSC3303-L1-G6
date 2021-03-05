@@ -2,12 +2,13 @@
     Author: Zijun Hu
     This is the JUnit test case for Scheduler, mainly test the state changing this the Scheduler.
  */
-package project.scheduler;
+package project.scheduler.tests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import project.floor.Floor;
 import project.elevator.Elevator;
+import project.scheduler.Scheduler;
 import project.scheduler.src.SchedulerState;
 import project.utils.Database;
 

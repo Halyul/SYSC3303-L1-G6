@@ -3,10 +3,12 @@
 
     This is the test class for Class ElevatorStatus.
  */
-package project.scheduler.src;
+package project.scheduler.tests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import project.scheduler.src.ElevatorStatus;
 
 class ElevatorStatusTest {
     ElevatorStatus e = new ElevatorStatus();
