@@ -59,6 +59,13 @@ public class Sender {
     	return revMessage;
     }
     
+    public String sendEelvatorState(String role, int identifier, String state, int floor, int direction, long time, InetAddress address, int port) {
+    	String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";floor:" + floor + ";direction:" + direction + ";time:" + time + ";type:sendEelvatorState;";
+    	Boolean isSent = send(message, address, port);
+    	String revMessage = receive();
+    	return revMessage;
+    }
+    
     /**
      * Used by Floor subsystem
      * @return the message replied by the scheduler

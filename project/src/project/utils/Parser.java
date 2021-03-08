@@ -20,12 +20,15 @@ public class Parser {
     private String type;
     // error message
     private String error;
+    // 
+    private byte[] ogBytes;
     
     public Parser() {
         
     }
     
     public Parser(byte[] inputMessage) {
+    	this.ogBytes = inputMessage;
         parse(inputMessage);
     }
     
@@ -36,6 +39,7 @@ public class Parser {
      * @return if the input message is successfully parsed
      */
     public Boolean parse(byte[] inputMessage) {
+    	this.ogBytes = inputMessage;
         String message = new String(inputMessage);
         logic(message);
         return true;
@@ -70,6 +74,10 @@ public class Parser {
                 this.error = value;
             }
         }
+    }
+    
+    public byte[] formatMessage() {
+    	return this.ogBytes;
     }
     
     /**
