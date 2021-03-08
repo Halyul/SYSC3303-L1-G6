@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import project.scheduler.src.ElevatorStatus;
 
 class ElevatorStatusTest {
-    ElevatorStatus e = new ElevatorStatus();
+    ElevatorStatus e = new ElevatorStatus(1);
 
     @Test
     void setCurrentStatusTest() {
@@ -51,9 +51,9 @@ class ElevatorStatusTest {
 
     @Test
     void addNextStopTest() {
-        e.addNextStop(15);
-        e.addNextStop(7);
-        e.addNextStop(14);
+        e.addLastAction(15);
+        e.addLastAction(7);
+        e.addLastAction(14);
         Assertions.assertEquals(15,e.popNextStop());
         Assertions.assertEquals(7,e.popNextStop());
         Assertions.assertEquals(14,e.popNextStop());
@@ -61,9 +61,9 @@ class ElevatorStatusTest {
 
     @Test
     void popNextStop() {
-        e.addNextStop(15);
-        e.addNextStop(7);
-        e.addNextStop(14);
+        e.addLastAction(15);
+        e.addLastAction(7);
+        e.addLastAction(14);
         e.popNextStop();    //pop floor 15
         Assertions.assertEquals(7,e.popNextStop());
         Assertions.assertEquals(14,e.popNextStop());
@@ -71,7 +71,7 @@ class ElevatorStatusTest {
 
     @Test
     void actionListEmpty() {
-        e.addNextStop(15);
+        e.addLastAction(15);
         Assertions.assertFalse(e.actionListEmpty());
 
         e.popNextStop();
