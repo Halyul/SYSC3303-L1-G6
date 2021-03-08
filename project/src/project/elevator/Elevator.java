@@ -52,6 +52,8 @@ public class Elevator implements Runnable {
     private volatile DataStruct schedulerCommand = new DataStruct();
     // error message
     private String errorMessage;
+    // idle message state
+    private boolean isSentidleMessage = false;
     
     /**
      * Elevator constructor
@@ -145,29 +147,33 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State stationary() {
+    	if (!this.isSentidleMessage) {
+    		String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
+    		this.isSentidleMessage = true;
+    	}
         if (this.schedulerCommand.isWaiting()) {
             String state = this.schedulerCommand.getState();
             if (state.equals("Check")) {
-                String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Check", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
-            } else if (state.equals("OpenDoor")) {
-                return State.OpenDoor;
+                String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
             } else if (state.equals("Move")) {
+            	// check if it is the same floor?
                 int destFloor = this.schedulerCommand.getFloor();
                 this.destFloor = destFloor;
-                String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
+                if (destFloor == this.currentFloor) {
+                	// same floor, use State Stop because the elevator need to clean up the command
+                	return State.Stop;
+                }
+                int difference = this.destFloor - this.currentFloor;
+                if (difference > 0) {
+                    // going up
+                    this.direction = 1;
+                } else if (difference < 0) {
+                    this.direction = 0;
+                }
+                String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
+                this.isSentidleMessage = false;
                 return State.Move;
             }
-        	// legacy code
-//            int destFloor = parser.getFloor();
-//            if (destFloor == this.currentFloor) {
-//                // state OpenDoor
-//            	return State.OpenDoor;
-//            } else {
-//            	this.destFloor = destFloor;
-//            	// state Move
-//            	String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
-//            	return State.Move;
-//            }
         }
         return State.Stationary;
     }
@@ -178,7 +184,7 @@ public class Elevator implements Runnable {
      */
     private State openDoor() {
         door.open();
-        String revMsg = sender.sendState(this.getClass().getSimpleName(), this.identifier, "OpenDoor", getTime(), schedulerAddress, this.schedulerPort);
+        String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "OpenDoor", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
         parser.parse(revMsg);
         String state = parser.getState();
         if (state.equals("Received")) {
@@ -194,7 +200,7 @@ public class Elevator implements Runnable {
      */
     private State closeDoor() {
         door.close();
-        String revMsg = sender.sendState(this.getClass().getSimpleName(), this.identifier, "CloseDoor", getTime(), schedulerAddress, this.schedulerPort); // get next step
+        String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "CloseDoor", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort); // get next step
         parser.parse(revMsg);
         String state = parser.getState();
         if (state.equals("Received")) {
@@ -242,7 +248,7 @@ public class Elevator implements Runnable {
         if (this.currentFloor == this.destFloor) {
             return State.Stop;
         }
-        String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
+        String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
         parser.parse(revMsg);
         String state = parser.getState();
         if (state.equals("Received")) {
@@ -268,9 +274,9 @@ public class Elevator implements Runnable {
         }
         this.speed = 0;
         this.direction = -1;
-        System.out.println(Thread.currentThread().getName() + ": arrived at " + this.destFloor + " floor.");
+        System.out.println(Thread.currentThread().getName() + ": stop at " + this.destFloor + " floor.");
         this.schedulerCommand.finished();
-        String revMsg = sender.sendFloor(this.getClass().getSimpleName(), this.identifier, "Stop", this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
+        String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Stop", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
         parser.parse(revMsg);
         String state = parser.getState();
         if (state.equals("Received")) {
