@@ -32,7 +32,7 @@ class SchedulerTest {
         byte[] messageBytes = message.getBytes();
         db.put(messageBytes);
         scheduler.execute();
-        Assertions.assertEquals(SchedulerState.parseMessageFromFloor ,scheduler.getState());
+        Assertions.assertEquals(SchedulerState.parseFloorMessage ,scheduler.getState());
     }
 
     @Test
@@ -41,6 +41,6 @@ class SchedulerTest {
         byte[] messageBytes = message.getBytes();
         db.put(messageBytes);
         scheduler.execute();
-        Assertions.assertEquals(SchedulerState.parseMessageFromElevator ,scheduler.getState());
+        Assertions.assertEquals(SchedulerState.parseElevatorMessage ,scheduler.getState());
     }
 }
