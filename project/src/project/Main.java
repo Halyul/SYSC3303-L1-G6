@@ -19,7 +19,7 @@ public class Main {
         // Floor subsystem
         Floor floor = new Floor(1, 7, db);
         // Scheduler
-        Scheduler scheduler = new Scheduler(db, elevator, floor);
+        Scheduler scheduler = new Scheduler(db, elevator, floor, 7);
 
         // new threads
         elevatorThread = new Thread(elevator, "Elevator 1");

@@ -16,7 +16,7 @@ class SchedulerTest {
     Database db = new Database();
     Elevator elevator = new Elevator(1, 1, 7, 0, false, false, false, db);
     Floor floor = new Floor(7, 7, db);
-    Scheduler scheduler = new Scheduler(db, elevator, floor);
+    Scheduler scheduler = new Scheduler(db, elevator, floor, 7);
 
     @Test
     void WaitMessageTest() {
@@ -32,7 +32,7 @@ class SchedulerTest {
         byte[] messageBytes = message.getBytes();
         db.put(messageBytes);
         scheduler.execute();
-        Assertions.assertEquals(SchedulerState.InstructElevator ,scheduler.getState());
+        Assertions.assertEquals(SchedulerState.parseMessageFromFloor ,scheduler.getState());
     }
 
     @Test
@@ -41,6 +41,6 @@ class SchedulerTest {
         byte[] messageBytes = message.getBytes();
         db.put(messageBytes);
         scheduler.execute();
-        Assertions.assertEquals(SchedulerState.UpdateSubsystem ,scheduler.getState());
+        Assertions.assertEquals(SchedulerState.parseMessageFromElevator ,scheduler.getState());
     }
 }
