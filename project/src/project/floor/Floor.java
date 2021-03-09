@@ -13,6 +13,7 @@ import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 
@@ -28,7 +29,7 @@ public class Floor implements Runnable {
 	private int floorNumber;
 	//Number of the top floor
 	private int topFloor;
-	private double baseTime = 0.0;
+	private double baseTime = 0;
 
 	private Sender sender;
 	private Parser parser = new Parser();
@@ -158,13 +159,13 @@ public class Floor implements Runnable {
 	 * Used to convert input button presses to a reasonable time
 	 * @param inputTime the time when a button is pressed
 	 * */
-	private double floorTime(Date inputTime) {
+	private double floorTime(String inputTime) {
 		String time = inputTime.toString();
 		double hour = Double.parseDouble(time.substring(0,2));
-		double minute = Double.parseDouble(time.substring(3,6));
-		double seconds = Double.parseDouble(time.substring(7,10));
+		double minute = Double.parseDouble(time.substring(3,5));
+		double seconds = Double.parseDouble(time.substring(6,8));
 		
-		return (hour * 60) + minute + (seconds / 100); //Returns the time in a HHMM.SS format in seconds
+		return (hour * 60 * 60 + minute * 60 + seconds) / 100; //Returns the time in a HHMM.SS format in seconds
 	}
 	
 	/**
@@ -181,23 +182,44 @@ public class Floor implements Runnable {
 				String ins = inReader.nextLine();		//Goes to the next line, storing the current line in ins
 				String[] individualIns = ins.split("\\s+");		//Split the instructions at whitespace characters
 				int dir = 0;
+				if(individualIns[2].equals("Up")) {	//If passengers wants to go up
+					dir = 1;
+					if(this.floorNumber != topFloor) {
+						if(!this.upButton.getState()) {
+							//Checks if the button is already on
+							this.upButton.on();
+						}
+					}
+				}
+				else if(individualIns[2].equals("Down")) { //If passengers wants to go down
+					dir = 0;
+					if(this.floorNumber != 0) {
+						if(!this.downButton.getState()) {	//Checks if the button is already on
+							this.downButton.on();
+						}
+					}
+				}
 				int currentFloor = Integer.parseInt(individualIns[1]); // get the floor the user currently at
+				int destFloor = Integer.parseInt(individualIns[3]);	//Stores destination floor
 				SimpleDateFormat time = new SimpleDateFormat("HH:MM:SS.S");	//Used for epoch time conversion
 				try {
 					Date currTime = time.parse(individualIns[0]);
-					double inputTime = floorTime(currTime);
-					if(baseTime == 0.0) {
+					double inputTime = floorTime(individualIns[0]);
+					if(baseTime == 0) {
 						baseTime = inputTime;
 					}
 					//TODO: Send message and add people to queue based on time
-				}	catch(ParseException e) {
-					
+					Thread.sleep((long) (inputTime - baseTime));
+					send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, "Reading");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 				
 
 			}
 			inReader.close();
-		}	catch (FileNotFoundException | InterruptedException e) {
+		}	catch (FileNotFoundException e) {
 			System.out.println(Thread.currentThread().getName() + ": File not found");
 		}
 		

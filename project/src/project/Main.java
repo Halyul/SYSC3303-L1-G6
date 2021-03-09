@@ -1,5 +1,7 @@
 package project;
 
+import java.net.*;
+
 import project.elevator.Elevator;
 import project.scheduler.Scheduler;
 import project.floor.Floor;
@@ -11,13 +13,21 @@ public class Main {
      * @param args
      */
     public static void main(String[] args) {
+    	InetAddress schedulerAddress = null;
+    	try {
+    		schedulerAddress = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+    	
         // threads
         Thread elevatorThread, schedulerThread, floorThread;
         Database db = new Database();
         // Elevator subsystem
         Elevator elevator = new Elevator(1, 1, 7, 0, false, false, false, db);
         // Floor subsystem
-        Floor floor = new Floor(1, 7, db);
+        Floor floor = new Floor(1, 7, db, schedulerAddress, 12000);
         // Scheduler
         Scheduler scheduler = new Scheduler(db, elevator, floor, 7);
 

@@ -161,6 +161,7 @@ public class Elevator implements Runnable {
                 this.destFloor = destFloor;
                 if (destFloor == this.currentFloor) {
                 	// same floor, use State Stop because the elevator need to clean up the command
+                	this.isSentidleMessage = false;
                 	return State.Stop;
                 }
                 int difference = this.destFloor - this.currentFloor;
