@@ -1,16 +1,16 @@
 package project.utils;
 
-import java.net.InetAddress;
+import java.io.*;
+import java.net.*;
 
 import project.utils.Database;
 
 public class Sender {
-	//    private InetAddress address;
-//    private int port;
 	// udp retry times
 	private int retryTimes;
-
+	private boolean isDebug;
 	private Database database;
+	private DatagramSocket sendReceiveSocket;
 
 	/**
 	 * Reserve for UDP
@@ -18,7 +18,22 @@ public class Sender {
 	 * @param port
 	 */
 	public Sender() {
-
+		try {
+			this.sendReceiveSocket = new DatagramSocket();
+		} catch (SocketException se) {
+			se.printStackTrace();
+			System.exit(1);
+	    }
+	}
+	
+	public Sender(boolean isDebug) {
+		this.isDebug = isDebug;
+		try {
+			this.sendReceiveSocket = new DatagramSocket();
+		} catch (SocketException se) {
+			se.printStackTrace();
+			System.exit(1);
+	    }
 	}
 
 	public Sender(Database database) {
@@ -77,13 +92,6 @@ public class Sender {
 		String revMessage = receive();
 		return revMessage;
 	}
-	// legacy code
-	public String sendInput(int identifier, String state, int direction, int floor, long time) {
-		String message = "role:Floor;id:" + identifier + ";state:" + state + ";direction:" + direction + ";floor:" + floor + ";time:" + time + ";type:sendInput;";
-		Boolean isSent = send(message);
-		String revMessage = receive();
-		return revMessage;
-	}
 
 	public String sendError(String role, int identifier, String error, int floor, long time, InetAddress address, int port) {
 		String message = "role:" + role + ";id:" + identifier + ";error:" + error + ";floor:" + floor + ";time:" + time + ";type:sendError;";
@@ -94,18 +102,38 @@ public class Sender {
 
 	private Boolean send(String message, InetAddress address, int port) {
 		byte[] messageBytes = message.getBytes();
+    	
+    	DatagramPacket sendPacket = new DatagramPacket(messageBytes, messageBytes.length, address, port);
+    	
+//    	try {
+//    		this.sendReceiveSocket.send(sendPacket);
+//	    } catch (IOException e) {
+//	    	e.printStackTrace();
+//	    	System.exit(1);
+//	    }
 		database.put(messageBytes);
-		return true;
-	}
-	// legacy code
-	private Boolean send(String message) {
-		byte[] messageBytes = message.getBytes();
-		database.put(messageBytes);
+		
 		return true;
 	}
 
 	private String receive() {
-		return "state:Received;";
+		byte data[] = new byte[100];
+    	DatagramPacket receivePacket = new DatagramPacket(data, data.length);
+    	if (!this.isDebug) {
+//		    try {
+//		    	this.sendReceiveSocket.receive(receivePacket);
+//		    } catch(IOException e) {
+//		    	e.printStackTrace();
+//		    	System.exit(1);
+//		    }
+//		    
+//		    Parser p = new Parser(data);
+//		    
+//	    	return p.getState();
+    		return "state:Received";
+    	} else {
+    		return "state:Received";
+    	}
 	}
 }
 

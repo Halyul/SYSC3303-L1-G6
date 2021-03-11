@@ -1,10 +1,10 @@
 package project.elevator;
-import java.net.InetAddress;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
+import java.net.*;
+import java.time.*;
+import java.util.*;
 
 import project.elevator.src.*;
+import project.elevator.src.Receiver;
 import project.utils.*;
 
 public class Elevator implements Runnable {
@@ -69,7 +69,7 @@ public class Elevator implements Runnable {
      */
     public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, InetAddress schedulerAddress, int port) {
         // needs update here
-        //this.sender = new Sender(db);
+        this.sender = new Sender();
         
         this.totalGroundFloors = totalGroundFloors;
         this.totalUndergroundFloors = totalUndergroundFloors;
@@ -373,7 +373,26 @@ public class Elevator implements Runnable {
         }
     }
     
-    public static void main(String args[]) {
-        
-    }
+   public static void main(String args[]) {
+	   	InetAddress schedulerAddress = null;
+	   	int numberOfElevators = 4;
+	   	ArrayList<Elevator> elevators = new ArrayList<Elevator>();
+	   	ArrayList<Thread> elevatorThreads = new ArrayList<Thread>();
+	   	try {
+	   		schedulerAddress = InetAddress.getLocalHost();
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+	   	for (int i = 0; i < numberOfElevators; i++) {
+	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, false, false, false, schedulerAddress, 12000);
+	   		elevators.add(elevator);
+	   		Thread elevatorThread = new Thread(elevator, "Elevator " + (i + 1));
+	   		elevatorThreads.add(elevatorThread);
+	   		elevatorThread.start();
+	   	}
+	   	Receiver r = new Receiver(elevators, schedulerAddress, 12000);
+	   	Thread receiverThread = new Thread(r, "Receiver");
+	   	receiverThread.start();
+   }
 }

@@ -58,12 +58,16 @@ class ElevatorTest {
     @Test
     @DisplayName("Same floor pick up user and move to 3rd floor")   
     public void testSameFloorPickUpMoveTo3() {
-        byte[] string = "state:OpenDoor;floor:3;".getBytes();
+        byte[] string = "state:Move;floor:1;".getBytes();
         e.put(string);
+        e.execute();
+        assertEquals("Stop", e.getState(), "The elevator not in Stop");
         e.execute();
         assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
         e.execute();
         assertEquals("CloseDoor", e.getState(), "The elevator not in CloseDoor");
+        string = "state:Move;floor:3;".getBytes();
+        e.put(string);
         e.execute();
         assertEquals("Move", e.getState(), "The elevator not in Move");
         e.execute(); // 2nd to 3rd floor

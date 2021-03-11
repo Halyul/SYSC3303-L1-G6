@@ -148,7 +148,7 @@ public class Floor implements Runnable {
 		Boolean isSent = false;
 		// Haoyu Xu: updated Sender
 		// role:Floor;id:<current floor number>;state:<your own definition>;direction:<1/up or 0/down>;floor:<button pressed in the car>;time:<time>
-		String revMsg = sender.sendInput(currentFloor, state, direction, CarButton, time);
+		String revMsg = sender.sendInput(currentFloor, state, direction, CarButton, time, schedulerAddress, schedulerPort);
 //		while(!isSent) {
 //			isSent = sender.send("floor", this.floorNumber, this.floorNumber, direction, CarButton, time);
 //		}
