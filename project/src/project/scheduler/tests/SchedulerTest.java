@@ -12,11 +12,17 @@ import project.scheduler.Scheduler;
 import project.scheduler.src.SchedulerState;
 import project.utils.Database;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 class SchedulerTest {
     Database db = new Database();
     Elevator elevator = new Elevator(1, 1, 7, 0, false, false, false, db);
-    Floor floor = new Floor(7, 7, db);
+    Floor floor = new Floor(1, 7, db, InetAddress.getLocalHost(), 12000);
     Scheduler scheduler = new Scheduler(db, elevator, floor, 7);
+
+    SchedulerTest() throws UnknownHostException {
+    }
 
     @Test
     void WaitMessageTest() {

@@ -9,13 +9,13 @@ import project.utils.*;
 
 public class Elevator implements Runnable {
     private State state = State.Stationary;
-
+    
     // floor height
-    private static final double floorHeight = 3.57;
+    private static final double floorHeight = 3.57; 
     // The number of ground floors
-    private int totalGroundFloors;
+    private int totalGroundFloors; 
     // The number of underground floors
-    private int totalUndergroundFloors;
+    private int totalUndergroundFloors; 
     // id of the elevator
     private int identifier;
     // the floor the elevator initially stays
@@ -28,10 +28,10 @@ public class Elevator implements Runnable {
     private double speed = 0;
     // simulate stuck between floors
     private boolean stuckBetweenFloors;
-
+    
     private InetAddress schedulerAddress;
     private int schedulerPort;
-
+    
     private Sender sender;
     private Parser parser = new Parser();
     private Door door;
@@ -54,7 +54,7 @@ public class Elevator implements Runnable {
     private String errorMessage;
     // idle message state
     private boolean isSentidleMessage = false;
-
+    
     /**
      * Elevator constructor
      * @param identifier the id of the elevator
@@ -70,7 +70,7 @@ public class Elevator implements Runnable {
     public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, InetAddress schedulerAddress, int port) {
         // needs update here
         //this.sender = new Sender(db);
-
+        
         this.totalGroundFloors = totalGroundFloors;
         this.totalUndergroundFloors = totalUndergroundFloors;
         this.identifier = identifier;
@@ -89,11 +89,11 @@ public class Elevator implements Runnable {
         this.schedulerAddress = schedulerAddress;
         this.schedulerPort = port;
     }
-
+    
     // legacy code
     public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, Database db) {
         this.sender = new Sender(db);
-
+        
         this.totalGroundFloors = totalGroundFloors;
         this.totalUndergroundFloors = totalUndergroundFloors;
         this.identifier = identifier;
@@ -110,7 +110,7 @@ public class Elevator implements Runnable {
         }
         floorLamps.get(buttonIndex(this.currentFloor)).on();
     }
-
+    
     /**
      * start the elevator
      */
@@ -130,10 +130,10 @@ public class Elevator implements Runnable {
             System.exit(-1);
         }
     }
-
+    
     /**
      * Add scheduler command to the list
-     *
+     * 
      * @param inputMessage the message
      */
     public void put(byte[] inputMessage) {
@@ -141,30 +141,37 @@ public class Elevator implements Runnable {
         this.schedulerCommand.setState(this.parser.getState(), this.parser.getFloor());
         System.out.println("Elevator 1: receive a task: " + new String(inputMessage));
     }
-
+    
     /**
      * State Stationary, the elevator has nothing to do
      * @return next state
      */
     private State stationary() {
-        if (!this.isSentidleMessage) {
-            String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-            this.isSentidleMessage = true;
+    	if (!this.isSentidleMessage) {
+    		String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
+    		this.isSentidleMessage = true;
             System.out.println("Elevator 1: Current stationary");
-        }
+    	}
         if (this.schedulerCommand.isWaiting()) {
             String state = this.schedulerCommand.getState();
             if (state.equals("Check")) {
                 String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
             } else if (state.equals("Move")) {
-                // check if it is the same floor?
+            	// check if it is the same floor?
                 int destFloor = this.schedulerCommand.getFloor();
-                if (destFloor == this.currentFloor) {
-                    // same floor, use State Stop because the elevator need to clean up the command
-                    this.isSentidleMessage = false;
-                    return State.Stop;
-                }
                 this.destFloor = destFloor;
+                if (destFloor == this.currentFloor) {
+                	// same floor, use State Stop because the elevator need to clean up the command
+                	this.isSentidleMessage = false;
+                	return State.Stop;
+                }
+                int difference = this.destFloor - this.currentFloor;
+                if (difference > 0) {
+                    // going up
+                    this.direction = 1;
+                } else if (difference < 0) {
+                    this.direction = 0;
+                }
                 String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
                 this.isSentidleMessage = false;
                 return State.Move;
@@ -172,7 +179,7 @@ public class Elevator implements Runnable {
         }
         return State.Stationary;
     }
-
+    
     /**
      * State OpenDoor, the elevator opens the door
      * @return next state
@@ -188,7 +195,7 @@ public class Elevator implements Runnable {
             return State.Error;
         }
     }
-
+    
     /**
      * State CloseDoor, the elevator closes the door
      * @return next state
@@ -208,7 +215,7 @@ public class Elevator implements Runnable {
         }
         return State.Error;
     }
-
+    
     /**
      * State Move, the elevator moves between floors
      * @return next state
@@ -222,7 +229,7 @@ public class Elevator implements Runnable {
             this.direction = 1;
             directionLamp.on();
             motor.up(this.speed);
-
+            
             this.speed = arrivalSensors.get(buttonIndex(this.currentFloor)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
             this.currentFloor++;
             floorLamps.get(buttonIndex(this.currentFloor - 1)).off();
@@ -233,13 +240,13 @@ public class Elevator implements Runnable {
             this.direction = 0;
             directionLamp.on();
             motor.down(this.speed);
-
+            
             this.speed = arrivalSensors.get(buttonIndex(this.currentFloor)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
             this.currentFloor--;
             floorLamps.get(buttonIndex(this.currentFloor + 1)).off();
             floorLamps.get(buttonIndex(this.currentFloor)).on();
         }
-
+        
         if (this.currentFloor == this.destFloor) {
             return State.Stop;
         }
@@ -255,7 +262,7 @@ public class Elevator implements Runnable {
             return State.Error;
         }
     }
-
+    
     /**
      * State Stop, the elevator stops at a certain floor
      * @return next state
@@ -269,7 +276,7 @@ public class Elevator implements Runnable {
         }
         this.speed = 0;
         this.direction = -1;
-        System.out.println(Thread.currentThread().getName() + ": arrived at " + this.destFloor + " floor.");
+        System.out.println(Thread.currentThread().getName() + ": stop at " + this.destFloor + " floor.");
         this.schedulerCommand.finished();
         String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Stop", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
         parser.parse(revMsg);
@@ -281,7 +288,7 @@ public class Elevator implements Runnable {
             return State.Error;
         }
     }
-
+    
     /**
      * State Error, the elevator errors out
      * The elevator will try to contact the Scheduler about the error and then shutdown for safety reasons
@@ -304,7 +311,7 @@ public class Elevator implements Runnable {
             }
         }
     }
-
+    
     /**
      * Calculate the index of the button in this.buttons
      * eg. the building has 7 floors (1F - 7F), then first floor -> index 0
@@ -322,7 +329,7 @@ public class Elevator implements Runnable {
         }
         return index;
     }
-
+    
     /**
      * Get current time in epoch seconds
      * @return as described above
@@ -331,11 +338,11 @@ public class Elevator implements Runnable {
         LocalDateTime localDateTime = LocalDateTime.now();
         return localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
-
+    
     public void test(String state) {
-
+        
     }
-
+    
     /**
      * For Unit testing, get current state of the elevator
      * @return the state name in string
@@ -355,18 +362,18 @@ public class Elevator implements Runnable {
             return "Error";
         }
     }
-
+    
     /**
      * @see java.lang.Runnable#run()
      */
-    @Override
+   @Override
     public void run() {
         while(true) {
             execute();
         }
     }
-
+    
     public static void main(String args[]) {
-
+        
     }
 }
