@@ -8,7 +8,7 @@ import project.utils.Database;
 public class Main {
     /**
      * Start the program.
-     * @param args
+     * @param args no args needed
      */
     public static void main(String[] args) {
         // threads
