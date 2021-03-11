@@ -12,7 +12,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 
 public class ElevatorStatus {
-    private int id;
+    private final int id;
     private String currentStatus;
     private int currentAction;
     private int currentLocation;
@@ -24,7 +24,6 @@ public class ElevatorStatus {
         this.currentStatus = "Idle";
         this.currentDirection = -1;
     }
-
 
     /**
      * Set elevator's current status
@@ -69,6 +68,9 @@ public class ElevatorStatus {
     }
 
 
+    /**
+     * Get elevator's current direction
+     */
     public void setDirection(int currentDirection){
         this.currentDirection = currentDirection;
     }
@@ -91,10 +93,16 @@ public class ElevatorStatus {
         this.nextActionList.add(floorNum);
     }
 
+    /**
+     * Get the elevator's next action list
+     */
     public ArrayList<Integer> getNextActionList(){
         return this.nextActionList;
     }
 
+    /**
+     * set the elevator's next action list
+     */
     public void setNextActionList(ArrayList<Integer> nextActionList){
         this.nextActionList = nextActionList;
     }
@@ -108,6 +116,9 @@ public class ElevatorStatus {
         return nextStop;
     }
 
+    /**
+     * get the last action of the elevator
+     */
     public int getLastAction(){
         if(this.nextActionList.size() == 0){
             return this.currentAction;
@@ -115,11 +126,16 @@ public class ElevatorStatus {
         return this.nextActionList.get(this.nextActionList.size() - 1);
     }
 
-
+    /**
+     * check if the next action list is empty
+     */
     public boolean actionListEmpty() {
         return this.nextActionList.size() == 0;
     }
 
+    /**
+     * check if the elevator is Idle
+     */
     public boolean isIdle() {
         return this.currentStatus.equals("Idle");
     }

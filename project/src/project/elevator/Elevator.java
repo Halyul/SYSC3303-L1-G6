@@ -64,7 +64,6 @@ public class Elevator implements Runnable {
      * @param doorStuckAtOpen if the door is stuck at open
      * @param doorStuckAtClose if the door is stuck at close
      * @param stuckBetweenFloors if the elevator is stuck between floors
-     * @param db the database
      * @param schedulerAddress the address of the scheduler
      * @param port the port of the scheduler
      */
@@ -140,6 +139,7 @@ public class Elevator implements Runnable {
     public void put(byte[] inputMessage) {
         this.parser.parse(inputMessage);
         this.schedulerCommand.setState(this.parser.getState(), this.parser.getFloor());
+        System.out.println("Elevator 1: receive a task: " + new String(inputMessage));
     }
     
     /**
@@ -150,6 +150,7 @@ public class Elevator implements Runnable {
     	if (!this.isSentidleMessage) {
     		String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
     		this.isSentidleMessage = true;
+            System.out.println("Elevator 1: Current stationary");
     	}
         if (this.schedulerCommand.isWaiting()) {
             String state = this.schedulerCommand.getState();
