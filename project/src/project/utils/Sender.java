@@ -9,7 +9,6 @@ public class Sender {
 	// udp retry times
 	private int retryTimes;
 	private boolean isDebug;
-	private Database database;
 	private DatagramSocket sendReceiveSocket;
 
 	/**
@@ -35,11 +34,6 @@ public class Sender {
 			System.exit(1);
 	    }
 	}
-
-	public Sender(Database database) {
-		this.database = database;
-	}
-
 	/**
 	 * Send the message to the host.
 	 * @param role the role of the subsystem
@@ -76,7 +70,6 @@ public class Sender {
 
 	public String sendEelvatorState(String role, int identifier, String state, int floor, int direction, long time, InetAddress address, int port) {
 		String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";floor:" + floor + ";direction:" + direction + ";time:" + time + ";type:sendEelvatorState;";
-//        System.out.println(message);
 		Boolean isSent = send(message, address, port);
 		String revMessage = receive();
 		return revMessage;
@@ -105,13 +98,12 @@ public class Sender {
     	
     	DatagramPacket sendPacket = new DatagramPacket(messageBytes, messageBytes.length, address, port);
     	
-//    	try {
-//    		this.sendReceiveSocket.send(sendPacket);
-//	    } catch (IOException e) {
-//	    	e.printStackTrace();
-//	    	System.exit(1);
-//	    }
-		database.put(messageBytes);
+    	try {
+    		this.sendReceiveSocket.send(sendPacket);
+	    } catch (IOException e) {
+	    	e.printStackTrace();
+	    	System.exit(1);
+	    }
 		
 		return true;
 	}
@@ -120,17 +112,16 @@ public class Sender {
 		byte data[] = new byte[100];
     	DatagramPacket receivePacket = new DatagramPacket(data, data.length);
     	if (!this.isDebug) {
-//		    try {
-//		    	this.sendReceiveSocket.receive(receivePacket);
-//		    } catch(IOException e) {
-//		    	e.printStackTrace();
-//		    	System.exit(1);
-//		    }
-//		    
-//		    Parser p = new Parser(data);
-//		    
-//	    	return p.getState();
-    		return "state:Received";
+		    try {
+		    	this.sendReceiveSocket.receive(receivePacket);
+		    } catch(IOException e) {
+		    	e.printStackTrace();
+		    	System.exit(1);
+		    }
+		    
+		    Parser p = new Parser(data);
+		    
+	    	return p.getState();
     	} else {
     		return "state:Received";
     	}
