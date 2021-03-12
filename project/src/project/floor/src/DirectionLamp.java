@@ -3,9 +3,12 @@ package project.floor.src;
 public class DirectionLamp {
     // light status
     private Boolean isOn = false;
+    private int floor;
+    private boolean dir;	//True for up, false for down
     
-    public DirectionLamp() {
-        
+    public DirectionLamp(int floor, boolean dir) {
+		this.floor = floor;
+		this.dir = dir;
     }
     
     /**
@@ -20,6 +23,14 @@ public class DirectionLamp {
      */
     public void off() {
         this.isOn = false;
+    }
+    
+    public boolean getDirection(){
+    	return this.dir;
+    }
+    
+    public int getFloor() {
+    	return this.floor;
     }
     
     /**
