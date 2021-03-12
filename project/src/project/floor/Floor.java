@@ -18,7 +18,7 @@ public class Floor implements Runnable{
 	private int topFloor;
 	private double baseTime = 0;
 
-	private Sender sender;
+	private Sender sender = new Sender();
 	private Parser parser = new Parser();
 
 	private InetAddress schedulerAddress;
@@ -70,7 +70,7 @@ public class Floor implements Runnable{
 			int currFloor = parser.getFloor();
 			if (parser.getRole().equals("Elevator") && parser.getState().equals("Stop")) {
 				
-				if(currFloor == 0)// If bottom floor
+				if(currFloor == 1)// If bottom floor
 					floorButtons.get(0).off();
 				else if(currFloor == this.topFloor)	//If top floor
 					floorButtons.get((currFloor*2)-3).off();
@@ -157,7 +157,7 @@ public class Floor implements Runnable{
 				int currentFloor = Integer.parseInt(individualIns[1]); // get the floor the user currently at
 				if(individualIns[2].equals("Up")) {	//If passengers wants to go up
 					dir = 1;
-					if(currentFloor != topFloor && currentFloor != 0) { //If not top of bottom floor
+					if(currentFloor != topFloor && currentFloor != 1) { //If not top of bottom floor
 						if(!floorButtons.get((currentFloor*2)-3).getState()) {
 							//Checks if the button is already on
 							floorButtons.get((currentFloor*2)-3).on();
@@ -172,14 +172,13 @@ public class Floor implements Runnable{
 				}
 				else if(individualIns[2].equals("Down")) { //If passengers wants to go down
 					dir = 0;
-					if(currentFloor != topFloor && currentFloor != 0) { //If not top of bottom floor
+					if(currentFloor != topFloor && currentFloor != 1) { //If not top of bottom floor
 						if(!floorButtons.get((currentFloor*2)-2).getState()) {	//Checks if the button is already on
 							floorButtons.get((currentFloor*2)-2).on();
 						}
 					}
 					else {
-						if(!floorButtons.get((currentFloor*2)-3).getState()) {
-							//Checks if the button is already on
+						if(!floorButtons.get((currentFloor*2)-3).getState()) { //Checks if the button is already on
 							floorButtons.get((currentFloor*2)-3).on();
 						}
 					}
