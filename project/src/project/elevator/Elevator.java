@@ -339,10 +339,6 @@ public class Elevator implements Runnable {
         return localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
     
-    public void test(String state) {
-        
-    }
-    
     /**
      * For Unit testing, get current state of the elevator
      * @return the state name in string

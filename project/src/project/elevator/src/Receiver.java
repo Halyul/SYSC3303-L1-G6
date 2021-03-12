@@ -30,6 +30,9 @@ public class Receiver implements Runnable {
 		this.isDebug = isDebug;
 	}
 	
+	/**
+	 * Receive a message
+	 */
 	private void execute() {
 		byte data[] = new byte[5000];
 	    this.receivePacket = new DatagramPacket(data, data.length);
@@ -41,6 +44,9 @@ public class Receiver implements Runnable {
 	    }
 	}
 	
+	/**
+	 * Parse a message
+	 */
 	private void parse() {
 		byte message[] = this.receivePacket.getData();
 		System.out.println(new String(message));
@@ -53,6 +59,11 @@ public class Receiver implements Runnable {
 		}
 	}
 	
+	/**
+	 * For unit test only, generate a new packet from messageBytes and parse it
+	 * @param messageBytes the input message
+	 * @return parse message
+	 */
 	public byte[] debug(byte[] messageBytes) {
 		this.receivePacket = new DatagramPacket(messageBytes, messageBytes.length);
 		parse();
