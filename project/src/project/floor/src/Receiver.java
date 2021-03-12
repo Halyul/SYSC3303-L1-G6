@@ -15,7 +15,7 @@ public class Receiver implements Runnable {
 		this.schedulerAddress = schedulerAddress;
 		this.schedulerPort = port;
 		try {
-			this.receiveSocket = new DatagramSocket(port + 100);
+			this.receiveSocket = new DatagramSocket(port + 200);
 		} catch (SocketException e) {
 			e.printStackTrace();
 			System.exit(1);
