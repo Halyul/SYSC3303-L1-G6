@@ -7,6 +7,7 @@
 package project.scheduler;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.time.ZoneOffset;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import project.utils.Parser;
 import project.utils.Database;
 
 import project.elevator.*;
+import project.elevator.src.Receiver;
 import project.scheduler.src.*;
 
 public class Scheduler implements Runnable {
@@ -116,9 +118,9 @@ public class Scheduler implements Runnable {
             // need to remove later
             String message = "state:Move" + ";floor:" + userLocation;
             System.out.println("Scheduler: elevator Idle - Message: " + message);
-            this.elevator_1.put(message.getBytes());
+            // this.elevator_1.put(message.getBytes());
 
-//            this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), InetAddress.getLocalHost(), 12000);   // sends instruction
+            this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), InetAddress.getLocalHost(), 12000);   // sends instruction
             currentElevatorStatus.setCurrentAction(userLocation);       // update the local currentAction to user's location
         } else {                                                        //elevator is running
             if (this.isPrime(currentElevatorStatus.getDirection(), currentElevatorStatus.getCurrentAction(), userLocation)) {
@@ -128,9 +130,9 @@ public class Scheduler implements Runnable {
                 // need to remove later
                 String message = "state:Move" + ";floor:" + userLocation;
                 System.out.println("Scheduler: elevator moving, new task - Message: " + message);
-                this.elevator_1.put(message.getBytes());
+                // this.elevator_1.put(message.getBytes());
 
-//                this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), InetAddress.getLocalHost(), 12000);   // sends instruction
+                this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), InetAddress.getLocalHost(), 12000);   // sends instruction
                 currentElevatorStatus.setCurrentAction(userLocation);       // update the local currentAction to user's location
 
                 nextActionList.add(oldCurrentAction);  // add lower prime action(old current action) back to action list
@@ -186,9 +188,9 @@ public class Scheduler implements Runnable {
                 // need remove later
                 String message = "state:Move" + ";floor:" + nextFloor;
                 System.out.println("Scheduler: elevator arrived, next task - Message: " + message);
-                this.elevator_1.put(message.getBytes());
+                //this.elevator_1.put(message.getBytes());
 
-//                sender.sendFloor("elevator", elevatorID, "Move", nextFloor, this.getTime(), InetAddress.getLocalHost(), 12000);   // sends instruction
+                sender.sendFloor("elevator", elevatorID, "Move", nextFloor, this.getTime(), InetAddress.getLocalHost(), 12000);   // sends instruction
                 currentElevatorStatus.setCurrentAction(nextFloor);    // Update elevator's current action
             }
         }
@@ -206,7 +208,7 @@ public class Scheduler implements Runnable {
      * @throws Exception in case sender throw an error
      */
     private void updateFloorSubsystem() throws Exception {
-//        sender.sendDirection("scheduler", 0, "Move", this.parser.getDirection(), this.getTime(), InetAddress.getLocalHost(), 12000);
+        sender.sendDirection("scheduler", 0, "Move", this.parser.getDirection(), this.getTime(), InetAddress.getLocalHost(), 12000);
     }
 
     /**
@@ -296,4 +298,23 @@ public class Scheduler implements Runnable {
     public SchedulerState getState() {
         return this.schedulerState;
     }
+    public static void main(String args[]) {
+	   	InetAddress schedulerAddress = null;
+
+	   	try {
+	   		schedulerAddress = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+	    Scheduler scheduler = new Scheduler(db, elevator, floor, 7);
+	   	Thread schedulerThread = new Thread(scheduler, "Scheduler " );
+	   	schedulerThread.start();
+
+	   	Receiver r = new Receiver(elevators, schedulerAddress, 12000);
+	   	Thread receiverThread = new Thread(r, "Receiver");
+	   	receiverThread.start();
+   }
+
 }
