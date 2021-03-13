@@ -6,8 +6,6 @@ package project.scheduler.tests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import project.floor.Floor;
-import project.elevator.Elevator;
 import project.scheduler.Scheduler;
 import project.scheduler.src.SchedulerState;
 import project.utils.Database;
@@ -16,10 +14,10 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 class SchedulerTest {
+    int schedulerPort = 12000;
     Database db = new Database();
-    Elevator elevator = new Elevator(1, 1, 7, 0, false, false, false, db);
-    Floor floor = new Floor(1, 7, db, InetAddress.getLocalHost(), 12000);
-    Scheduler scheduler = new Scheduler(db, elevator, floor, 7);
+
+    Scheduler scheduler = new Scheduler(db, 1, 7, InetAddress.getLocalHost(), schedulerPort);
 
     SchedulerTest() throws UnknownHostException {
     }

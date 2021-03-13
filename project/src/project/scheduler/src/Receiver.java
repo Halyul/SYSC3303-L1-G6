@@ -8,17 +8,14 @@ import project.utils.*;
 import project.scheduler.Scheduler;
 
 public class Receiver implements Runnable {
-	private Scheduler scheduler;
-	private InetAddress schedulerAddress;
-    private int schedulerPort;
+	private Database db;
     private DatagramSocket receiveSocket;
     private DatagramPacket receivePacket;
     private boolean isDebug;
     private byte[] debugMessage;
 	
-	public Receiver(Scheduler scheduler, InetAddress schedulerAddress, int port) {
-		this.schedulerAddress = schedulerAddress;
-		this.schedulerPort = port;
+	public Receiver(Database db, int port) {
+		this.db = db;
 		try {
 			this.receiveSocket = new DatagramSocket(port);
 		} catch (SocketException e) {
@@ -35,7 +32,7 @@ public class Receiver implements Runnable {
 	 * Receive a message
 	 */
 	private void execute() {
-		byte data[] = new byte[5000];
+		byte[] data = new byte[5000];
 	    this.receivePacket = new DatagramPacket(data, data.length);
 	    try {
 	    	this.receiveSocket.receive(this.receivePacket);
@@ -49,9 +46,9 @@ public class Receiver implements Runnable {
 	 * Parse a message
 	 */
 	private void parse() {
-		byte message[] = this.receivePacket.getData();
+		byte[] message = this.receivePacket.getData();
 		if (!this.isDebug) {
-			this.elevators.get(id - 1).put(message);
+			this.db.put(message);
 		} else {
 			this.debugMessage = message;
 		}

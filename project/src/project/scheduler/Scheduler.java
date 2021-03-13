@@ -13,42 +13,41 @@ import java.time.ZoneOffset;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
-import project.floor.Floor;
-import project.utils.Sender;
-import project.utils.Parser;
-import project.utils.Database;
+import project.utils.*;
 
-import project.elevator.*;
-import project.elevator.src.Receiver;
 import project.scheduler.src.*;
+
 
 public class Scheduler implements Runnable {
     private Database db = new Database();
     private Sender sender = new Sender(db);
     private ArrayList<ElevatorStatus> elevatorStatusArrayList = new ArrayList<ElevatorStatus>();
     private int totalFloorNumber;
-    private Elevator elevator_1;  // need to remove later
-    private Floor floor_1;    // need to remove later
     private SchedulerState schedulerState;
     private Parser parser = new Parser();
+    private InetAddress systemAddress;
+    private int elevatorPort, floorPort;
 
-    public Scheduler(Database db, int totalElevatorNumber, int totalFloorNumber) {
+    public Scheduler(Database db, int totalElevatorNumber, int totalFloorNumber, InetAddress address, int defaultPort) {
         this.db = db;
+        this.systemAddress = address;
+        this.elevatorPort = defaultPort + 100;
+        this.floorPort = defaultPort + 200;
         this.schedulerState = SchedulerState.WaitMessage;
         for (int i = 1; i <= totalElevatorNumber; i++) {
-            elevatorStatusArrayList.add(new ElevatorStatus(i));
+            this.elevatorStatusArrayList.add(new ElevatorStatus(i));
         }
         this.totalFloorNumber = totalFloorNumber;
     }
 
-    public Scheduler(Database db, Elevator elevator, Floor floor, int totalFloorNumber) {// need to remove later
-        this.db = db;
-        this.schedulerState = SchedulerState.WaitMessage;
-        elevatorStatusArrayList.add(new ElevatorStatus(1));
-        this.elevator_1 = elevator;
-        this.floor_1 = floor;
-        this.totalFloorNumber = totalFloorNumber;
-    }
+//    public Scheduler(Database db, Elevator elevator, Floor floor, int totalFloorNumber) {// need to remove later
+//        this.db = db;
+//        this.schedulerState = SchedulerState.WaitMessage;
+//        elevatorStatusArrayList.add(new ElevatorStatus(1));
+//        this.elevator_1 = elevator;
+//        this.floor_1 = floor;
+//        this.totalFloorNumber = totalFloorNumber;
+//    }
 
     /**
      * Forward the message to correct subsystem
@@ -120,7 +119,7 @@ public class Scheduler implements Runnable {
             System.out.println("Scheduler: elevator Idle - Message: " + message);
             // this.elevator_1.put(message.getBytes());
 
-            this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), InetAddress.getLocalHost(), 12000);   // sends instruction
+            this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
             currentElevatorStatus.setCurrentAction(userLocation);       // update the local currentAction to user's location
         } else {                                                        //elevator is running
             if (this.isPrime(currentElevatorStatus.getDirection(), currentElevatorStatus.getCurrentAction(), userLocation)) {
@@ -132,7 +131,7 @@ public class Scheduler implements Runnable {
                 System.out.println("Scheduler: elevator moving, new task - Message: " + message);
                 // this.elevator_1.put(message.getBytes());
 
-                this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), InetAddress.getLocalHost(), 12000);   // sends instruction
+                this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
                 currentElevatorStatus.setCurrentAction(userLocation);       // update the local currentAction to user's location
 
                 nextActionList.add(oldCurrentAction);  // add lower prime action(old current action) back to action list
@@ -190,7 +189,7 @@ public class Scheduler implements Runnable {
                 System.out.println("Scheduler: elevator arrived, next task - Message: " + message);
                 //this.elevator_1.put(message.getBytes());
 
-                sender.sendFloor("elevator", elevatorID, "Move", nextFloor, this.getTime(), InetAddress.getLocalHost(), 12000);   // sends instruction
+                sender.sendFloor("elevator", elevatorID, "Move", nextFloor, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
                 currentElevatorStatus.setCurrentAction(nextFloor);    // Update elevator's current action
             }
         }
@@ -208,7 +207,7 @@ public class Scheduler implements Runnable {
      * @throws Exception in case sender throw an error
      */
     private void updateFloorSubsystem() throws Exception {
-        sender.sendDirection("scheduler", 0, "Move", this.parser.getDirection(), this.getTime(), InetAddress.getLocalHost(), 12000);
+        sender.sendDirection("scheduler", 0, "Move", this.parser.getDirection(), this.getTime(), this.systemAddress, this.floorPort);
     }
 
     /**
@@ -229,10 +228,10 @@ public class Scheduler implements Runnable {
     /**
      * check if the user's location is in a reasonable pickup range of the elevator
      *
-     * @param direction elevator direction
+     * @param direction       elevator direction
      * @param currentLocation elevator's current location
-     * @param lastAction the last stop in the action list
-     * @param userLocation user's location
+     * @param lastAction      the last stop in the action list
+     * @param userLocation    user's location
      * @return boolean in reasonable pickup range or not
      */
     private boolean inPickUpRange(int direction, int currentLocation, int lastAction, int userLocation) {
@@ -275,6 +274,7 @@ public class Scheduler implements Runnable {
         return localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
 
+
     /**
      * @see java.lang.Runnable #run()
      */
@@ -298,23 +298,25 @@ public class Scheduler implements Runnable {
     public SchedulerState getState() {
         return this.schedulerState;
     }
-    public static void main(String args[]) {
-	   	InetAddress schedulerAddress = null;
 
-	   	try {
-	   		schedulerAddress = InetAddress.getLocalHost();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+    public static void main(String[] args) {
+        InetAddress schedulerAddress = null;
+        int schedulerPort = 12000;
+        Database db = new Database();
 
-	    Scheduler scheduler = new Scheduler(db, elevator, floor, 7);
-	   	Thread schedulerThread = new Thread(scheduler, "Scheduler " );
-	   	schedulerThread.start();
+        try {
+            schedulerAddress = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
-	   	Receiver r = new Receiver(elevators, schedulerAddress, 12000);
-	   	Thread receiverThread = new Thread(r, "Receiver");
-	   	receiverThread.start();
-   }
+        Scheduler scheduler = new Scheduler(db, 2, 7, schedulerAddress, schedulerPort);
+        Thread schedulerThread = new Thread(scheduler, "Scheduler ");
+        schedulerThread.start();
 
+        Receiver r = new Receiver(db, schedulerPort);
+        Thread receiverThread = new Thread(r, "Receiver");
+        receiverThread.start();
+    }
 }
