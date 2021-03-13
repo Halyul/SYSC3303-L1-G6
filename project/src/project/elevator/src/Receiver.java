@@ -14,6 +14,7 @@ public class Receiver implements Runnable {
     private byte[] debugMessage;
 	
 	public Receiver(ArrayList<Elevator> elevators, int port) {
+		this.elevators = elevators;
 		try {
 			this.receiveSocket = new DatagramSocket(port + 100);
 		} catch (SocketException e) {
@@ -50,8 +51,9 @@ public class Receiver implements Runnable {
 		if (messageLength >= 0)
 			System.arraycopy(receivePacket.getData(), 0, message, 0, messageLength);        // Intercept the required part
 		System.out.println(new String(message));
-		Parser p = new Parser();
+		Parser p = new Parser(message);
 		int id = p.getIdentifier();
+		System.out.println(id);
 		if (!this.isDebug) {
 			this.elevators.get(id - 1).put(message);
 		} else {
