@@ -4,7 +4,6 @@ import java.time.*;
 import java.util.*;
 
 import project.elevator.src.*;
-import project.elevator.src.Receiver;
 import project.utils.*;
 
 public class Elevator implements Runnable {
@@ -36,7 +35,6 @@ public class Elevator implements Runnable {
     private Parser parser = new Parser();
     private Door door;
     private Motor motor = new Motor();
-    private Database db;
     // buttons of each floor in the car
     private ArrayList<ElevatorButton> buttons = new ArrayList<ElevatorButton>();
     // each lamp under the button
@@ -88,27 +86,6 @@ public class Elevator implements Runnable {
         floorLamps.get(buttonIndex(this.currentFloor)).on();
         this.schedulerAddress = schedulerAddress;
         this.schedulerPort = port;
-    }
-    
-    // legacy code
-    public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, Database db) {
-        this.sender = new Sender(db);
-        
-        this.totalGroundFloors = totalGroundFloors;
-        this.totalUndergroundFloors = totalUndergroundFloors;
-        this.identifier = identifier;
-        this.currentFloor = currentFloor;
-        this.door = new Door(doorStuckAtOpen, doorStuckAtClose);
-        this.stuckBetweenFloors = stuckBetweenFloors;
-        for(int i = this.totalUndergroundFloors; i <= this.totalGroundFloors; i++) {
-            if (i != 0) {
-                buttons.add(new ElevatorButton(i));
-                buttonLamps.add(new ElevatorLamp(i));
-                floorLamps.add(new ElevatorLamp(i));
-                arrivalSensors.add(new ArrivalSensor(i));
-            }
-        }
-        floorLamps.get(buttonIndex(this.currentFloor)).on();
     }
     
     /**
