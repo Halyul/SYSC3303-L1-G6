@@ -189,7 +189,7 @@ public class Scheduler implements Runnable {
      * @throws Exception in case sender throw an error
      */
     private void updateFloorSubsystem(){
-        sender.sendDirection(this.parser.getRole(), this.parser.getIdentifier(), this.parser.getState(), this.parser.getDirection(), this.getTime(), this.systemAddress, this.floorPort);
+        sender.sendElevatorState(this.parser.getRole(), this.parser.getIdentifier(), this.parser.getState(), this.parser.getFloor(), this.parser.getDirection(), this.getTime(), this.systemAddress, this.floorPort);
     }
 
     /**
