@@ -1,59 +1,71 @@
 package project.scheduler.src;
 
-
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
+
 import project.utils.*;
-import project.scheduler.Scheduler;
 
 public class Receiver implements Runnable {
 	private Database db;
-    private DatagramSocket receiveSocket;
+    private DatagramSocket receiveSendSocket;
     private DatagramPacket receivePacket;
     private boolean isDebug;
     private byte[] debugMessage;
-	
+
 	public Receiver(Database db, int port) {
 		this.db = db;
 		try {
-			this.receiveSocket = new DatagramSocket(port);
+			this.receiveSendSocket = new DatagramSocket(port);
 		} catch (SocketException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
 	}
-	
+
 	public Receiver(boolean isDebug) {
 		this.isDebug = isDebug;
 	}
-	
+
 	/**
 	 * Receive a message
 	 */
-	private void execute() {
+	private void execute(){
 		byte[] data = new byte[5000];
 	    this.receivePacket = new DatagramPacket(data, data.length);
 	    try {
-	    	this.receiveSocket.receive(this.receivePacket);
+	    	this.receiveSendSocket.receive(this.receivePacket);
 	    } catch(IOException e) {
 	    	e.printStackTrace();
 	    	System.exit(1);
 	    }
+	    this.parse();
+	    byte[] message = "state:Received".getBytes();
+		DatagramPacket sendPacket = new DatagramPacket(message, message.length, this.receivePacket.getAddress(), this.receivePacket.getPort());
+		try {
+			receiveSendSocket.send(sendPacket);    // sends the message
+		} catch (Exception e){
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
-	
+
 	/**
 	 * Parse a message
 	 */
 	private void parse() {
-		byte[] message = this.receivePacket.getData();
+		int messageLength = receivePacket.getLength();
+		byte[] message = new byte[messageLength];
+		if (messageLength >= 0)
+			System.arraycopy(receivePacket.getData(), 0, message, 0, messageLength);        // Intercept the required part
+
 		if (!this.isDebug) {
 			this.db.put(message);
 		} else {
 			this.debugMessage = message;
 		}
 	}
-	
+
 	/**
 	 * For unit test only, generate a new packet from messageBytes and parse it
 	 * @param messageBytes the input message
@@ -63,7 +75,7 @@ public class Receiver implements Runnable {
 		this.receivePacket = new DatagramPacket(messageBytes, messageBytes.length);
 		parse();
 		return this.debugMessage;
-		
+
 	}
 
 	@Override

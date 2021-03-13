@@ -20,7 +20,7 @@ import project.scheduler.src.*;
 
 public class Scheduler implements Runnable {
     private Database db = new Database();
-    private Sender sender = new Sender(db);
+    private Sender sender = new Sender();
     private ArrayList<ElevatorStatus> elevatorStatusArrayList = new ArrayList<ElevatorStatus>();
     private int totalFloorNumber;
     private SchedulerState schedulerState;
@@ -39,15 +39,6 @@ public class Scheduler implements Runnable {
         }
         this.totalFloorNumber = totalFloorNumber;
     }
-
-//    public Scheduler(Database db, Elevator elevator, Floor floor, int totalFloorNumber) {// need to remove later
-//        this.db = db;
-//        this.schedulerState = SchedulerState.WaitMessage;
-//        elevatorStatusArrayList.add(new ElevatorStatus(1));
-//        this.elevator_1 = elevator;
-//        this.floor_1 = floor;
-//        this.totalFloorNumber = totalFloorNumber;
-//    }
 
     /**
      * Forward the message to correct subsystem
@@ -88,6 +79,7 @@ public class Scheduler implements Runnable {
             if (fit) {      // this elevator is available to pick the user
                 if (distance > Math.abs(e.getCurrentLocation() - userLocation)) {
                     bestElevatorToMoveId = e.getId();
+                    distance = e.getCurrentLocation() - userLocation;
                 }
             }
         }
