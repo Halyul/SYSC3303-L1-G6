@@ -6,9 +6,6 @@
 
 package project.scheduler.src;
 
-import project.utils.Sender;
-
-import java.net.InetAddress;
 import java.util.ArrayList;
 
 public class ElevatorStatus {
@@ -17,7 +14,7 @@ public class ElevatorStatus {
     private int currentAction;
     private int currentLocation;
     private int currentDirection;        // -1 none; 0 Down; 1 Up
-    private ArrayList<Integer> nextActionList = new ArrayList<Integer>();
+    private ArrayList<Integer> nextActionList = new ArrayList<>();
 
     public ElevatorStatus(int id) {
         this.id = id;
@@ -71,7 +68,7 @@ public class ElevatorStatus {
     /**
      * Get elevator's current direction
      */
-    public void setDirection(int currentDirection){
+    public void setDirection(int currentDirection) {
         this.currentDirection = currentDirection;
     }
 
@@ -82,7 +79,12 @@ public class ElevatorStatus {
         return this.currentDirection;
     }
 
-    public int getId(){
+    /**
+     * Get elevator id
+     *
+     * @return elevator id
+     */
+    public int getId() {
         return this.id;
     }
 
@@ -96,14 +98,14 @@ public class ElevatorStatus {
     /**
      * Get the elevator's next action list
      */
-    public ArrayList<Integer> getNextActionList(){
+    public ArrayList<Integer> getNextActionList() {
         return this.nextActionList;
     }
 
     /**
      * set the elevator's next action list
      */
-    public void setNextActionList(ArrayList<Integer> nextActionList){
+    public void setNextActionList(ArrayList<Integer> nextActionList) {
         this.nextActionList = nextActionList;
     }
 
@@ -119,8 +121,8 @@ public class ElevatorStatus {
     /**
      * get the last action of the elevator
      */
-    public int getLastAction(){
-        if(this.nextActionList.size() == 0){
+    public int getLastAction() {
+        if (this.nextActionList.size() == 0) {
             return this.currentAction;
         }
         return this.nextActionList.get(this.nextActionList.size() - 1);
