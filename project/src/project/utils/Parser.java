@@ -124,14 +124,6 @@ public class Parser {
     }
 
     /**
-     * get the type of the Sender
-     * @return as described above
-     */
-    public String getType() {
-        return this.type;
-    }
-
-    /**
      * get the error if any
      * @return as described above
      */

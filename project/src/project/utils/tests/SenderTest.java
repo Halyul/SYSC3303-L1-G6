@@ -39,41 +39,9 @@ class SenderTest {
 	}
 	
 	@Test
-    @DisplayName("sendState should work")   
-    public void testSendState() {
-		String string = "role:test;id:0;state:test;time:1234567890;type:sendState;";
-		s.sendState(role, id, state, time, a, p);
-		byte data[] = new byte[5000];
-		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-	    try {
-	    	this.receiveSocket.receive(receivePacket);
-	    } catch(IOException e) {
-	    	e.printStackTrace();
-	    	System.exit(1);
-	    }
-		assertEquals(string, new String(receivePacket.getData(), 0, receivePacket.getLength()), "The Sender can send a message using sendState");
-    }
-	
-	@Test
-    @DisplayName("sendDirection should work")   
-    public void testSendDirection() {
-		String string = "role:test;id:0;state:test;direction:1;time:1234567890;type:sendDirection;";
-		s.sendDirection(role, id, state, direction, time, a, p);
-		byte data[] = new byte[5000];
-		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-	    try {
-	    	this.receiveSocket.receive(receivePacket);
-	    } catch(IOException e) {
-	    	e.printStackTrace();
-	    	System.exit(1);
-	    }
-		assertEquals(string, new String(receivePacket.getData(), 0, receivePacket.getLength()), "The Sender can send a message using sendDirection");
-    }
-	
-	@Test
     @DisplayName("sendFloor should work")   
     public void testSendFloor() {
-		String string = "role:test;id:0;state:test;floor:1;time:1234567890;type:sendFloor;";
+		String string = "role:test;id:0;state:test;floor:1;time:1234567890;";
 		s.sendFloor(role, id, state, direction, time, a, p);
 		byte data[] = new byte[5000];
 		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
@@ -85,11 +53,27 @@ class SenderTest {
 	    }
 		assertEquals(string, new String(receivePacket.getData(), 0, receivePacket.getLength()), "The Sender can send a message using sendFloor");
     }
+
+	@Test
+	@DisplayName("sendElevatorState should work")
+	public void testSendElevatorState() {
+		String string = "role:test;id:0;state:test;floor:7;time:1234567890;";
+		s.sendElevatorState(role, id, state, 7, direction, time, a, p);
+		byte data[] = new byte[5000];
+		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
+		try {
+			this.receiveSocket.receive(receivePacket);
+		} catch(IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		assertEquals(string, new String(receivePacket.getData(), 0, receivePacket.getLength()), "The Sender can send a message using sendFloor");
+	}
 	
 	@Test
     @DisplayName("sendInput should work")   
     public void testSendInput() {
-		String string = "role:Floor;id:0;state:test;direction:1;floor:1;time:1234567890;type:sendInput;";
+		String string = "role:Floor;id:0;state:test;direction:1;floor:1;time:1234567890;";
 		s.sendInput(id, state, direction, direction, time, a, p);
 		byte data[] = new byte[5000];
 		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
@@ -105,7 +89,7 @@ class SenderTest {
 	@Test
     @DisplayName("sendError should work")   
     public void testSendError() {
-		String string = "role:test;id:0;error:test;floor:1;time:1234567890;type:sendError;";
+		String string = "role:test;id:0;error:test;floor:1;time:1234567890;";
 		s.sendError(role, id, state, direction, time, a, p);
 		byte data[] = new byte[5000];
 		DatagramPacket receivePacket = new DatagramPacket(data, data.length);

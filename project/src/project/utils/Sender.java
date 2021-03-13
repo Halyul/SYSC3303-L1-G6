@@ -40,29 +40,15 @@ public class Sender {
 	 * @return true if the message is successfully send, false otherwise
 	 */
 
-	public String sendState(String role, int identifier, String state, long time, InetAddress address, int port) {
-		String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";time:" + time + ";type:sendState;";
-		Boolean isSent = send(message, address, port);
-		String revMessage = receive();
-		return revMessage;
-	}
-
-	public String sendDirection(String role, int identifier, String state, int direction, long time, InetAddress address, int port) {
-		String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";direction:" + direction + ";time:" + time + ";type:sendDirection;";
-		Boolean isSent = send(message, address, port);
-		String revMessage = receive();
-		return revMessage;
-	}
-
 	public String sendFloor(String role, int identifier, String state, int floor, long time, InetAddress address, int port) {
-		String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";floor:" + floor + ";time:" + time + ";type:sendFloor;";
+		String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";floor:" + floor + ";time:" + time + ";";
 		Boolean isSent = send(message, address, port);
 		String revMessage = receive();
 		return revMessage;
 	}
 
-	public String sendEelvatorState(String role, int identifier, String state, int floor, int direction, long time, InetAddress address, int port) {
-		String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";floor:" + floor + ";direction:" + direction + ";time:" + time + ";type:sendEelvatorState;";
+	public String sendElevatorState(String role, int identifier, String state, int floor, int direction, long time, InetAddress address, int port) {
+		String message = "role:" + role + ";id:" + identifier + ";state:" + state + ";floor:" + floor + ";direction:" + direction + ";time:" + time + ";";
 		Boolean isSent = send(message, address, port);
 		String revMessage = receive();
 		return revMessage;
@@ -73,14 +59,14 @@ public class Sender {
 	 * @return the message replied by the scheduler
 	 */
 	public String sendInput(int identifier, String state, int direction, int floor, long time, InetAddress address, int port) {
-		String message = "role:Floor;id:" + identifier + ";state:" + state + ";direction:" + direction + ";floor:" + floor + ";time:" + time + ";type:sendInput;";
+		String message = "role:Floor;id:" + identifier + ";state:" + state + ";direction:" + direction + ";floor:" + floor + ";time:" + time + ";";
 		Boolean isSent = send(message, address, port);
 		String revMessage = receive();
 		return revMessage;
 	}
 
 	public String sendError(String role, int identifier, String error, int floor, long time, InetAddress address, int port) {
-		String message = "role:" + role + ";id:" + identifier + ";error:" + error + ";floor:" + floor + ";time:" + time + ";type:sendError;";
+		String message = "role:" + role + ";id:" + identifier + ";error:" + error + ";floor:" + floor + ";time:" + time + ";";
 		Boolean isSent = send(message, address, port);
 		String revMessage = receive();
 		return revMessage;
