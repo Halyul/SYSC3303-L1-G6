@@ -121,8 +121,6 @@ public class Floor implements Runnable{
 	 * @param state the status of the floor
 	 */
 	private void send(long time, int currentFloor, int direction, int CarButton, String state) {
-		// Haoyu Xu: updated Sender
-		// role:Floor;id:<current floor number>;state:<your own definition>;direction:<1/up or 0/down>;floor:<button pressed in the car>;time:<time>
 		String revMsg = sender.sendInput(currentFloor, state, direction, CarButton, time, schedulerAddress, this.schedulerPort);
 	}
 	
@@ -192,10 +190,9 @@ public class Floor implements Runnable{
 						baseTime = inputTime;
 					}
 					//TODO: Send message and add people to queue based on time
-//					Thread.sleep((long) (inputTime - baseTime));
+					Thread.sleep((long) (inputTime - baseTime));
 					send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, "Reading");
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

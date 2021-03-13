@@ -6,7 +6,6 @@ import java.net.*;
 import project.utils.Database;
 
 public class Sender {
-	// udp retry times
 	private int retryTimes;
 	private boolean isDebug;
 	private DatagramSocket sendReceiveSocket;
@@ -84,22 +83,6 @@ public class Sender {
 	}
 
 	private String receive() {
-		byte data[] = new byte[100];
-    	DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-//    	if (!this.isDebug) {
-//		    try {
-//		    	this.sendReceiveSocket.receive(receivePacket);
-//		    } catch(IOException e) {
-//		    	e.printStackTrace();
-//		    	System.exit(1);
-//		    }
-//
-//		    Parser p = new Parser(data);
-//
-//	    	return p.getState();
-//    	} else {
-//    		return "state:Received";
-//    	}
 		return "state:Received;";
 	}
 }

@@ -53,7 +53,6 @@ public class Receiver implements Runnable {
 //		System.out.println(new String(message));
 		Parser p = new Parser(message);
 		int id = p.getIdentifier();
-//		System.out.println(id);
 		if (!this.isDebug) {
 			this.elevators.get(id - 1).put(message);
 		} else {
