@@ -35,7 +35,10 @@ public class Receiver implements Runnable {
 	}
 	
 	private void parse() {
-		byte message[] = this.receivePacket.getData();
+		int messageLength = receivePacket.getLength();
+		byte[] message = new byte[messageLength];
+		if (messageLength >= 0)
+			System.arraycopy(receivePacket.getData(), 0, message, 0, messageLength);        // Intercept the required part
 		System.out.println(new String(message));
 		floor.put(message);
 	}
