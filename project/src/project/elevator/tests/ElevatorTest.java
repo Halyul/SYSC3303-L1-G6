@@ -1,6 +1,10 @@
 package project.elevator.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.junit.jupiter.api.*;
 
 import project.elevator.Elevator;
@@ -8,12 +12,17 @@ import project.utils.Database;
 
 class ElevatorTest {
     private Elevator e;
-    private Database db;
     
     @BeforeEach
     public void setUp() throws Exception {
-        this.db = new Database();
-        this.e = new Elevator(1, 1, 7, 0, false, false, false, db);
+        InetAddress schedulerAddress = null;
+        try {
+	   		schedulerAddress = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+        this.e = new Elevator(1, 1, 7, 0, false, false, false, false, schedulerAddress, 12000);
         
     }
     
@@ -58,12 +67,16 @@ class ElevatorTest {
     @Test
     @DisplayName("Same floor pick up user and move to 3rd floor")   
     public void testSameFloorPickUpMoveTo3() {
-        byte[] string = "state:OpenDoor;floor:3;".getBytes();
+        byte[] string = "state:Move;floor:1;".getBytes();
         e.put(string);
+        e.execute();
+        assertEquals("Stop", e.getState(), "The elevator not in Stop");
         e.execute();
         assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
         e.execute();
         assertEquals("CloseDoor", e.getState(), "The elevator not in CloseDoor");
+        string = "state:Move;floor:3;".getBytes();
+        e.put(string);
         e.execute();
         assertEquals("Move", e.getState(), "The elevator not in Move");
         e.execute(); // 2nd to 3rd floor

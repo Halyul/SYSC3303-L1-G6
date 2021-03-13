@@ -2,20 +2,25 @@
     Author: Zijun Hu
     This is the JUnit test case for Scheduler, mainly test the state changing this the Scheduler.
  */
-package project.scheduler;
+package project.scheduler.tests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import project.floor.Floor;
-import project.elevator.Elevator;
+import project.scheduler.Scheduler;
 import project.scheduler.src.SchedulerState;
 import project.utils.Database;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 class SchedulerTest {
+    int schedulerPort = 12000;
     Database db = new Database();
-    Elevator elevator = new Elevator(1, 1, 7, 0, false, false, false, db);
-    Floor floor = new Floor(7, 7, db);
-    Scheduler scheduler = new Scheduler(db, elevator, floor);
+
+    Scheduler scheduler = new Scheduler(db, 1, 7, InetAddress.getLocalHost(), schedulerPort);
+
+    SchedulerTest() throws UnknownHostException {
+    }
 
     @Test
     void WaitMessageTest() {
@@ -31,7 +36,7 @@ class SchedulerTest {
         byte[] messageBytes = message.getBytes();
         db.put(messageBytes);
         scheduler.execute();
-        Assertions.assertEquals(SchedulerState.InstructElevator ,scheduler.getState());
+        Assertions.assertEquals(SchedulerState.parseFloorMessage ,scheduler.getState());
     }
 
     @Test
@@ -40,6 +45,6 @@ class SchedulerTest {
         byte[] messageBytes = message.getBytes();
         db.put(messageBytes);
         scheduler.execute();
-        Assertions.assertEquals(SchedulerState.UpdateSubsystem ,scheduler.getState());
+        Assertions.assertEquals(SchedulerState.parseElevatorMessage ,scheduler.getState());
     }
 }

@@ -20,15 +20,17 @@ public class Parser {
     private String type;
     // error message
     private String error;
-    
+
+    private byte[] ogBytes;
+
     public Parser() {
-        
+
     }
-    
+
     public Parser(byte[] inputMessage) {
         parse(inputMessage);
     }
-    
+
     /**
      * Parse the message
      * TODO: error handling
@@ -36,18 +38,19 @@ public class Parser {
      * @return if the input message is successfully parsed
      */
     public Boolean parse(byte[] inputMessage) {
+        this.ogBytes = inputMessage;
         String message = new String(inputMessage);
         logic(message);
         return true;
     }
-    
+
     public Boolean parse(String inputMessage) {
-    	logic(inputMessage);
-    	return true;
+        logic(inputMessage);
+        return true;
     }
-    
+
     private void logic(String message) {
-    	String[] messageArray = message.split(";");
+        String[] messageArray = message.split(";");
         for (String item: messageArray) {
             String[] itemArray = item.split(":");
             String key = itemArray[0];
@@ -71,7 +74,7 @@ public class Parser {
             }
         }
     }
-    
+
     /**
      * get the sender of the message
      * @return as described above
@@ -79,7 +82,7 @@ public class Parser {
     public String getRole() {
         return this.role;
     }
-    
+
     /**
      * get the id of the sender
      * @return as described above
@@ -87,7 +90,7 @@ public class Parser {
     public int getIdentifier() {
         return this.identifier;
     }
-    
+
     /**
      * get state of the sender
      * @return as described above
@@ -95,7 +98,7 @@ public class Parser {
     public String getState() {
         return this.state;
     }
-    
+
     /**
      * get the direction
      * @return as described above
@@ -103,7 +106,7 @@ public class Parser {
     public int getDirection() {
         return this.direction;
     }
-    
+
     /**
      * get the destination floor the elevator needs to go to from the elevator
      * @return as described above
@@ -111,7 +114,7 @@ public class Parser {
     public int getFloor() {
         return this.floor;
     }
-    
+
     /**
      * get the time of the message
      * @return as described above
@@ -121,18 +124,14 @@ public class Parser {
     }
 
     /**
-     * get the type of the Sender
-     * @return as described above
-     */
-    public String getType() {
-        return this.type;
-    }
-    
-    /**
      * get the error if any
      * @return as described above
      */
     public String getError() {
         return this.error;
+    }
+
+    public byte[] formatMessage() {
+        return this.ogBytes;
     }
 }

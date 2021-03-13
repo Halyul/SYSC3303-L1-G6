@@ -15,7 +15,7 @@ class ParserTest {
 	@Test
     @DisplayName("parse string should work")   
     public void testParseString() {
-		String string = "role:test;id:0;state:test;direction:1;floor:1;time:1234567890;type:test;error:test;";
+		String string = "role:test;id:0;state:test;direction:1;floor:1;time:1234567890;error:test;";
 		p.parse(string);
 		assertEquals("test", p.getRole(), "getRole not working");
 		assertEquals(0, p.getIdentifier(), "getIdentifier not working");
@@ -23,14 +23,13 @@ class ParserTest {
 		assertEquals(1, p.getDirection(), "getDirection not working");
 		assertEquals(1, p.getFloor(), "getFloor not working");
 		assertEquals(1234567890, p.getTime(), "getTime not working");
-		assertEquals("test", p.getType(), "getType not working");
 		assertEquals("test", p.getError(), "getError not working");
     }
 	
 	@Test
     @DisplayName("parse bytes should work")   
     public void testParseBytes() {
-		String string = "role:test;id:0;state:test;direction:1;floor:1;time:1234567890;type:test;error:test;";
+		String string = "role:test;id:0;state:test;direction:1;floor:1;time:1234567890;error:test;";
 		p.parse(string.getBytes());
 		assertEquals("test", p.getRole(), "getRole not working");
 		assertEquals(0, p.getIdentifier(), "getIdentifier not working");
@@ -38,7 +37,6 @@ class ParserTest {
 		assertEquals(1, p.getDirection(), "getDirection not working");
 		assertEquals(1, p.getFloor(), "getFloor not working");
 		assertEquals(1234567890, p.getTime(), "getTime not working");
-		assertEquals("test", p.getType(), "getType not working");
 		assertEquals("test", p.getError(), "getError not working");
     }
 }
