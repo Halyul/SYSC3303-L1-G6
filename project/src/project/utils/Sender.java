@@ -88,7 +88,7 @@ public class Sender {
 
 	private Boolean send(String message, InetAddress address, int port) {
 		byte[] messageBytes = message.getBytes();
-    	System.out.println(message);
+//    	System.out.println(message);
     	DatagramPacket sendPacket = new DatagramPacket(messageBytes, messageBytes.length, address, port);
     	
     	if (!this.isDebug) {

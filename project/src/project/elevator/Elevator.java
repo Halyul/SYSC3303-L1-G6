@@ -116,7 +116,7 @@ public class Elevator implements Runnable {
     public void put(byte[] inputMessage) {
         this.parser.parse(inputMessage);
         this.schedulerCommand.setState(this.parser.getState(), this.parser.getFloor());
-        System.out.println("Elevator 1: receive a task: " + new String(inputMessage));
+        System.out.println("Elevator_" + this.identifier + ": receive a task: " + new String(inputMessage));
     }
     
     /**
@@ -127,7 +127,7 @@ public class Elevator implements Runnable {
     	if (!this.isSentidleMessage) {
     		String revMsg = sender.sendEelvatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
     		this.isSentidleMessage = true;
-            System.out.println("Elevator 1: Current stationary");
+            System.out.println("Elevator_" + this.identifier + ": Current stationary");
     	}
         if (this.schedulerCommand.isWaiting()) {
             String state = this.schedulerCommand.getState();
