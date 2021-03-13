@@ -25,12 +25,6 @@ public class Sender {
 	
 	public Sender(boolean isDebug) {
 		this.isDebug = isDebug;
-		try {
-			this.sendReceiveSocket = new DatagramSocket();
-		} catch (SocketException se) {
-			se.printStackTrace();
-			System.exit(1);
-	    }
 	}
 	/**
 	 * Send the message to the host.
@@ -106,7 +100,7 @@ public class Sender {
 //    	} else {
 //    		return "state:Received";
 //    	}
-		return "state:Received";
+		return "state:Received;";
 	}
 }
 

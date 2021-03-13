@@ -22,7 +22,7 @@ class ReceiverTest {
     @DisplayName("parse should work")   
     public void testParse() {
 		byte[] string = "role:test;id:0;state:test;time:1234567890;type:sendState;".getBytes();
-		assertEquals(string, r.debug(string), "The Reciver can parse a message");
+		assertEquals(new String(string), new String(r.debug(string)), "The Reciver can parse a message");
     }
 
 }

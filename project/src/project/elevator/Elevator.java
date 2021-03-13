@@ -51,7 +51,7 @@ public class Elevator implements Runnable {
     // error message
     private String errorMessage;
     // idle message state
-    private boolean isSentidleMessage = false;
+    private boolean isSentIdleMessage = false;
     
     /**
      * Elevator constructor
@@ -124,10 +124,10 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State stationary() {
-    	if (!this.isSentidleMessage) {
+    	if (!this.isSentIdleMessage) {
     		String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-    		this.isSentidleMessage = true;
-            System.out.println("Elevator_" + this.identifier + ": Current stationary");
+    		this.isSentIdleMessage = true;
+            System.out.println("Elevator " + this.identifier + ": Current stationary");
     	}
         if (this.schedulerCommand.isWaiting()) {
             String state = this.schedulerCommand.getState();
@@ -139,7 +139,7 @@ public class Elevator implements Runnable {
                 this.destFloor = destFloor;
                 if (destFloor == this.currentFloor) {
                 	// same floor, use State Stop because the elevator need to clean up the command
-                	this.isSentidleMessage = false;
+                	this.isSentIdleMessage = false;
                 	return State.Stop;
                 }
                 int difference = this.destFloor - this.currentFloor;
@@ -150,7 +150,7 @@ public class Elevator implements Runnable {
                     this.direction = 0;
                 }
                 String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-                this.isSentidleMessage = false;
+                this.isSentIdleMessage = false;
                 return State.Move;
             }
         }
@@ -162,7 +162,11 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State openDoor() {
-        door.open();
+        boolean isOpened = door.open();
+        if (!isOpened) {
+            this.errorMessage = "doorStuckAtOpen";
+            return State.Error;
+        }
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "OpenDoor", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
         parser.parse(revMsg);
         String state = parser.getState();
@@ -178,7 +182,11 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State closeDoor() {
-        door.close();
+        boolean isClosed = door.close();
+        if (!isClosed) {
+            this.errorMessage = "doorStuckAtClose";
+            return State.Error;
+        }
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "CloseDoor", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort); // get next step
         parser.parse(revMsg);
         String state = parser.getState();
@@ -206,7 +214,10 @@ public class Elevator implements Runnable {
             this.direction = 1;
             directionLamp.on();
             motor.up(this.speed);
-            
+            if (this.stuckBetweenFloors) {
+                this.errorMessage = "stuckBetweenFloors";
+                return state.Error;
+            }
             this.speed = arrivalSensors.get(buttonIndex(this.currentFloor)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
             this.currentFloor++;
             floorLamps.get(buttonIndex(this.currentFloor - 1)).off();
@@ -217,8 +228,11 @@ public class Elevator implements Runnable {
             this.direction = 0;
             directionLamp.on();
             motor.down(this.speed);
-            
             this.speed = arrivalSensors.get(buttonIndex(this.currentFloor)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
+            if (this.stuckBetweenFloors) {
+                this.errorMessage = "stuckBetweenFloors";
+                return state.Error;
+            }
             this.currentFloor--;
             floorLamps.get(buttonIndex(this.currentFloor + 1)).off();
             floorLamps.get(buttonIndex(this.currentFloor)).on();
@@ -235,7 +249,6 @@ public class Elevator implements Runnable {
             this.destFloor = newDestFloor;
             return State.Move;
         } else {
-//			this.schedulerNotReachable = true;
             return State.Error;
         }
     }
@@ -261,7 +274,6 @@ public class Elevator implements Runnable {
         if (state.equals("Received")) {
             return State.OpenDoor;
         } else {
-//        	this.schedulerNotReachable = true;
             return State.Error;
         }
     }
