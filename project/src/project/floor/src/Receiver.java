@@ -11,9 +11,8 @@ public class Receiver implements Runnable {
     private DatagramSocket receiveSocket;
     private DatagramPacket receivePacket;
     
-    public Receiver(InetAddress schedulerAddress, int port) {
-		this.schedulerAddress = schedulerAddress;
-		this.schedulerPort = port;
+    public Receiver(Floor floor, int port) {
+    	this.floor = floor;
 		try {
 			this.receiveSocket = new DatagramSocket(port + 200);
 		} catch (SocketException e) {
@@ -32,6 +31,7 @@ public class Receiver implements Runnable {
 	    	e.printStackTrace();
 	    	System.exit(1);
 	    }
+	    parse();
 	}
 	
 	private void parse() {

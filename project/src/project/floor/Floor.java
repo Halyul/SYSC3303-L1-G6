@@ -192,7 +192,7 @@ public class Floor implements Runnable{
 						baseTime = inputTime;
 					}
 					//TODO: Send message and add people to queue based on time
-					Thread.sleep((long) (inputTime - baseTime));
+//					Thread.sleep((long) (inputTime - baseTime));
 					send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, "Reading");
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -227,7 +227,7 @@ public class Floor implements Runnable{
 	   	Floor floor = new Floor(7, schedulerAddress, 12000);
 	   	Thread floorThread = new Thread(floor, "Floor");
 	   	floorThread.start();
-	   	Receiver r = new Receiver(schedulerAddress, 12000);
+	   	Receiver r = new Receiver(floor, 12000);
 	   	Thread receiverThread = new Thread(r, "Receiver");
 	   	receiverThread.start();
 	}

@@ -95,15 +95,17 @@ public class Sender {
 
 	private Boolean send(String message, InetAddress address, int port) {
 		byte[] messageBytes = message.getBytes();
-    	
+    	System.out.println(message);
     	DatagramPacket sendPacket = new DatagramPacket(messageBytes, messageBytes.length, address, port);
     	
-    	try {
-    		this.sendReceiveSocket.send(sendPacket);
-	    } catch (IOException e) {
-	    	e.printStackTrace();
-	    	System.exit(1);
-	    }
+    	if (!this.isDebug) {
+    		try {
+        		this.sendReceiveSocket.send(sendPacket);
+    	    } catch (IOException e) {
+    	    	e.printStackTrace();
+    	    	System.exit(1);
+    	    }
+    	}
 		
 		return true;
 	}

@@ -8,16 +8,12 @@ import project.elevator.Elevator;
 
 public class Receiver implements Runnable {
 	private ArrayList<Elevator> elevators;
-	private InetAddress schedulerAddress;
-    private int schedulerPort;
     private DatagramSocket receiveSocket;
     private DatagramPacket receivePacket;
     private boolean isDebug;
     private byte[] debugMessage;
 	
-	public Receiver(ArrayList<Elevator> elevators, InetAddress schedulerAddress, int port) {
-		this.schedulerAddress = schedulerAddress;
-		this.schedulerPort = port;
+	public Receiver(ArrayList<Elevator> elevators, int port) {
 		try {
 			this.receiveSocket = new DatagramSocket(port + 100);
 		} catch (SocketException e) {
@@ -42,6 +38,7 @@ public class Receiver implements Runnable {
 	    	e.printStackTrace();
 	    	System.exit(1);
 	    }
+	    parse();
 	}
 	
 	/**

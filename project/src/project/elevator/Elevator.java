@@ -353,10 +353,10 @@ public class Elevator implements Runnable {
 	   	ArrayList<Thread> elevatorThreads = new ArrayList<Thread>();
 	   	try {
 	   		schedulerAddress = InetAddress.getLocalHost();
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	   	for (int i = 0; i < numberOfElevators; i++) {
 	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, false, false, false, schedulerAddress, 12000);
 	   		elevators.add(elevator);
@@ -364,7 +364,7 @@ public class Elevator implements Runnable {
 	   		elevatorThreads.add(elevatorThread);
 	   		elevatorThread.start();
 	   	}
-	   	Receiver r = new Receiver(elevators, schedulerAddress, 12000);
+	   	Receiver r = new Receiver(elevators, 12000);
 	   	Thread receiverThread = new Thread(r, "Receiver");
 	   	receiverThread.start();
    }
