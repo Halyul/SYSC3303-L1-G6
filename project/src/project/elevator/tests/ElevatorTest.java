@@ -22,7 +22,7 @@ class ElevatorTest {
 			e.printStackTrace();
 			System.exit(1);
 		}
-        this.e = new Elevator(1, 1, 7, 0, false, false, false, schedulerAddress, 12000);
+        this.e = new Elevator(1, 1, 7, 0, false, false, false, false, schedulerAddress, 12000);
         
     }
     

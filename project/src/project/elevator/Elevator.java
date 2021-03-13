@@ -27,6 +27,8 @@ public class Elevator implements Runnable {
     private double speed = 0;
     // simulate stuck between floors
     private boolean stuckBetweenFloors;
+    // simulate udp lose packet
+    private boolean toLosePacket;
     
     private InetAddress schedulerAddress;
     private int schedulerPort;
@@ -65,7 +67,7 @@ public class Elevator implements Runnable {
      * @param schedulerAddress the address of the scheduler
      * @param port the port of the scheduler
      */
-    public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, InetAddress schedulerAddress, int port) {
+    public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, boolean toLosePacket, InetAddress schedulerAddress, int port) {
         // needs update here
         this.sender = new Sender();
         
@@ -75,6 +77,7 @@ public class Elevator implements Runnable {
         this.currentFloor = currentFloor;
         this.door = new Door(doorStuckAtOpen, doorStuckAtClose);
         this.stuckBetweenFloors = stuckBetweenFloors;
+        this.toLosePacket = toLosePacket;
         for(int i = this.totalUndergroundFloors; i <= this.totalGroundFloors; i++) {
             if (i != 0) {
                 buttons.add(new ElevatorButton(i));
@@ -116,7 +119,7 @@ public class Elevator implements Runnable {
     public void put(byte[] inputMessage) {
         this.parser.parse(inputMessage);
         this.schedulerCommand.setState(this.parser.getState(), this.parser.getFloor());
-        System.out.println("Elevator_" + this.identifier + ": receive a task: " + new String(inputMessage));
+        System.out.println("Elevator " + this.identifier + ": receive a task: " + new String(inputMessage));
     }
     
     /**
@@ -363,6 +366,32 @@ public class Elevator implements Runnable {
 	   	int numberOfElevators = 4;
 	   	ArrayList<Elevator> elevators = new ArrayList<Elevator>();
 	   	ArrayList<Thread> elevatorThreads = new ArrayList<Thread>();
+        
+        // inject faults
+        boolean doorStuckAtOpen[] = {
+            false,
+            false,
+            false,
+            false
+        };
+        boolean doorStuckAtClose[] = {
+            false,
+            false,
+            false,
+            false
+        };
+        boolean stuckBetweenFloors[] = {
+            false,
+            false,
+            false,
+            false
+        };
+        boolean toLosePacket[] = {
+            false,
+            false,
+            false,
+            false
+        };
 	   	try {
 	   		schedulerAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -370,7 +399,7 @@ public class Elevator implements Runnable {
 			System.exit(1);
 		}
 	   	for (int i = 0; i < numberOfElevators; i++) {
-	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, false, false, false, schedulerAddress, 12000);
+	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, doorStuckAtOpen[i], doorStuckAtClose[i], stuckBetweenFloors[i], toLosePacket[i], schedulerAddress, 12000);
 	   		elevators.add(elevator);
 	   		Thread elevatorThread = new Thread(elevator, "Elevator " + (i + 1));
 	   		elevatorThreads.add(elevatorThread);
