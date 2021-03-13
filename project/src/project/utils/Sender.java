@@ -13,8 +13,6 @@ public class Sender {
 
 	/**
 	 * Reserve for UDP
-	 * @param address
-	 * @param port
 	 */
 	public Sender() {
 		try {
@@ -38,11 +36,6 @@ public class Sender {
 	 * Send the message to the host.
 	 * @param role the role of the subsystem
 	 * @param identifier the identity number
-	 * @param floor for elevator, the next floor the elevator should go to
-	 * 					if currentFloor == floor, means the door should open
-	 * 				for floor, the current floor
-	 * @param direction up -> 1, down -> 0, undefined -> -1
-	 * @param button for elevator, the button pressed in the car, 0 for nothing
 	 * @param time epoch seconds of the message
 	 * @return true if the message is successfully send, false otherwise
 	 */
@@ -113,20 +106,21 @@ public class Sender {
 	private String receive() {
 		byte data[] = new byte[100];
     	DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-    	if (!this.isDebug) {
-		    try {
-		    	this.sendReceiveSocket.receive(receivePacket);
-		    } catch(IOException e) {
-		    	e.printStackTrace();
-		    	System.exit(1);
-		    }
-		    
-		    Parser p = new Parser(data);
-		    
-	    	return p.getState();
-    	} else {
-    		return "state:Received";
-    	}
+//    	if (!this.isDebug) {
+//		    try {
+//		    	this.sendReceiveSocket.receive(receivePacket);
+//		    } catch(IOException e) {
+//		    	e.printStackTrace();
+//		    	System.exit(1);
+//		    }
+//
+//		    Parser p = new Parser(data);
+//
+//	    	return p.getState();
+//    	} else {
+//    		return "state:Received";
+//    	}
+		return "state:Received";
 	}
 }
 

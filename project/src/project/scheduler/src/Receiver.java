@@ -40,14 +40,14 @@ public class Receiver implements Runnable {
 	    	System.exit(1);
 	    }
 	    this.parse();
-	    byte[] message = "state:Received".getBytes();
-		DatagramPacket sendPacket = new DatagramPacket(message, message.length, this.receivePacket.getAddress(), this.receivePacket.getPort());
-		try {
-			receiveSendSocket.send(sendPacket);    // sends the message
-		} catch (Exception e){
-			e.printStackTrace();
-			System.exit(1);
-		}
+//	    byte[] message = "state:Received".getBytes();
+//		DatagramPacket sendPacket = new DatagramPacket(message, message.length, this.receivePacket.getAddress(), this.receivePacket.getPort());
+//		try {
+//			receiveSendSocket.send(sendPacket);    // sends the message
+//		} catch (Exception e){
+//			e.printStackTrace();
+//			System.exit(1);
+//		}
 	}
 
 	/**
