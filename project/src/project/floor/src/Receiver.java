@@ -39,7 +39,7 @@ public class Receiver implements Runnable {
 		byte[] message = new byte[messageLength];
 		if (messageLength >= 0)
 			System.arraycopy(receivePacket.getData(), 0, message, 0, messageLength);        // Intercept the required part
-		System.out.println(new String(message));
+//		System.out.println(new String(message));
 		floor.put(message);
 	}
     

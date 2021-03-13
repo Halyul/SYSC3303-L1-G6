@@ -43,7 +43,7 @@ public class Scheduler implements Runnable {
     /**
      * Forward the message to correct subsystem
      */
-    public void execute() throws Exception {
+    public void execute(){
         if (this.schedulerState == SchedulerState.WaitMessage) {
             getNextMessage();
         } else if (this.schedulerState == SchedulerState.parseFloorMessage) {
@@ -61,7 +61,7 @@ public class Scheduler implements Runnable {
      *
      * @throws Exception in case sender throw an error
      */
-    private void parseFloorMessage() throws Exception {
+    private void parseFloorMessage(){
         int userLocation = this.parser.getIdentifier();
         int userDest = this.parser.getFloor();
         int distance = this.totalFloorNumber;
@@ -99,17 +99,14 @@ public class Scheduler implements Runnable {
      * @param userLocation   the location of user
      * @param userDest       user's destination
      */
-    private void startInstructElevator(int elevatorToMove, int userLocation, int userDest) throws Exception {
+    private void startInstructElevator(int elevatorToMove, int userLocation, int userDest){
         ElevatorStatus currentElevatorStatus = this.elevatorStatusArrayList.get(elevatorToMove - 1);
         ArrayList<Integer> nextActionList = currentElevatorStatus.getNextActionList();
 
         if (currentElevatorStatus.getCurrentStatus().equals("Idle")) {
             // elevator is in idle state, instruct elevator to pickup user at the user location
 
-            // need to remove later
-            String message = "state:Move" + ";floor:" + userLocation;
-            System.out.println("Scheduler: elevator Idle - Message: " + message);
-            // this.elevator_1.put(message.getBytes());
+            System.out.println("Scheduler: elevator_" + elevatorToMove + " Idle - Message: " + "Move to:" + userLocation);
 
             this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
             currentElevatorStatus.setCurrentAction(userLocation);       // update the local currentAction to user's location
@@ -118,10 +115,7 @@ public class Scheduler implements Runnable {
                 // user's location is prime than the current action, instruct elevator to pickup user at the user location
                 int oldCurrentAction = currentElevatorStatus.getCurrentAction();
 
-                // need to remove later
-                String message = "state:Move" + ";floor:" + userLocation;
-                System.out.println("Scheduler: elevator moving, new task - Message: " + message);
-                // this.elevator_1.put(message.getBytes());
+                System.out.println("Scheduler: elevator_" + elevatorToMove + " moving, new task - Message: " + "Move to:" + userLocation);
 
                 this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
                 currentElevatorStatus.setCurrentAction(userLocation);       // update the local currentAction to user's location
@@ -157,7 +151,7 @@ public class Scheduler implements Runnable {
      *
      * @throws Exception in case sender throw an error
      */
-    private void parseElevatorMessage() throws Exception {
+    private void parseElevatorMessage(){
         this.updateElevatorStatus();
         this.updateFloorSubsystem();
     }
@@ -168,7 +162,7 @@ public class Scheduler implements Runnable {
      *
      * @throws Exception in case sender throw an error
      */
-    private void updateElevatorStatus() throws Exception {
+    private void updateElevatorStatus(){
         int elevatorID = this.parser.getIdentifier();    //Elevator start from 1 in Elevator class
         ElevatorStatus currentElevatorStatus = elevatorStatusArrayList.get(elevatorID - 1);
 
@@ -176,11 +170,7 @@ public class Scheduler implements Runnable {
             if (!currentElevatorStatus.actionListEmpty()) {         // action list not empty, the elevator still have next action to do
                 int nextFloor = currentElevatorStatus.popNextStop();
 
-                // need remove later
-                String message = "state:Move" + ";floor:" + nextFloor;
-                System.out.println("Scheduler: elevator arrived, next task - Message: " + message);
-                //this.elevator_1.put(message.getBytes());
-
+                System.out.println("Scheduler: elevator_" + elevatorID + " arrived, next task - Message: " + "Move to:" + nextFloor);
                 sender.sendFloor("elevator", elevatorID, "Move", nextFloor, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
                 currentElevatorStatus.setCurrentAction(nextFloor);    // Update elevator's current action
             }
@@ -198,8 +188,8 @@ public class Scheduler implements Runnable {
      *
      * @throws Exception in case sender throw an error
      */
-    private void updateFloorSubsystem() throws Exception {
-        sender.sendDirection("scheduler", 0, "Move", this.parser.getDirection(), this.getTime(), this.systemAddress, this.floorPort);
+    private void updateFloorSubsystem(){
+        sender.sendDirection(this.parser.getRole(), this.parser.getIdentifier(), this.parser.getState(), this.parser.getDirection(), this.getTime(), this.systemAddress, this.floorPort);
     }
 
     /**
@@ -273,12 +263,7 @@ public class Scheduler implements Runnable {
     @Override
     public void run() {
         while (true) {
-            try {
-                this.execute();
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
+            this.execute();
         }
     }
 
