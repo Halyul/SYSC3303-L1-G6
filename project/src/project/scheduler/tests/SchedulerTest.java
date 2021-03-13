@@ -27,24 +27,24 @@ class SchedulerTest {
         String message = "role:Floor;id:7;state:Reading;direction:1;floor:4;time:10432800000;type:sendInput;";
         byte[] messageBytes = message.getBytes();
         db.put(messageBytes);
-        Assertions.assertEquals(SchedulerState.WaitMessage ,scheduler.getState());
+        Assertions.assertEquals(SchedulerState.WaitMessage, scheduler.getState());
     }
 
     @Test
-    void InstructElevatorTest() throws Exception {
+    void parseFloorMessageTest() {
         String message = "role:Floor;id:7;state:Reading;direction:1;floor:4;time:10432800000;type:sendInput;";
         byte[] messageBytes = message.getBytes();
         db.put(messageBytes);
         scheduler.execute();
-        Assertions.assertEquals(SchedulerState.parseFloorMessage ,scheduler.getState());
+        Assertions.assertEquals(SchedulerState.parseFloorMessage, scheduler.getState());
     }
 
     @Test
-    void UpdateSubsystemTest() throws Exception {
+    void parseElevatorMessageTest() {
         String message = "role:Elevator;id:7;state:Reading;direction:1;floor:4;time:10432800000;type:sendInput;";
         byte[] messageBytes = message.getBytes();
         db.put(messageBytes);
         scheduler.execute();
-        Assertions.assertEquals(SchedulerState.parseElevatorMessage ,scheduler.getState());
+        Assertions.assertEquals(SchedulerState.parseElevatorMessage, scheduler.getState());
     }
 }

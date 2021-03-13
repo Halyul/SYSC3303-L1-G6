@@ -1,29 +1,27 @@
 package project.scheduler.tests;
 
-import java.io.*;
-import java.net.*;
 import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.*;
-import project.scheduler.Scheduler;
 import project.scheduler.src.*;
+
 class ReceiverTest {
-	private Receiver r;
-	private String role = "test";
-	private int id = 0;
-	private String state = "test";
-	private long time = 1234567890;
-	private int  direction = 1;
-	
-	@BeforeEach
+    private Receiver r;
+
+    @BeforeEach
     public void setUp() {
         this.r = new Receiver(true);
     }
-	
-	@Test
-    @DisplayName("parse should work")   
+
+    @Test
+    @DisplayName("parse should work")
     public void testParse() {
-		byte[] string = "role:test;id:0;state:test;time:1234567890;type:sendState;".getBytes();
-		assertEquals(new String(string), new String(r.debug(string)), "The Receiver can parse a message");
+        String role = "test";
+        int id = 0;
+        String state = "test";
+        long time = 1234567890;
+        byte[] string = ("role:" + role + ";id:" + id + ";state:" + state + ";time:" + time + ";type:sendState;").getBytes();
+        assertEquals(new String(string), new String(r.debug(string)), "The Receiver can parse a message");
     }
 
 }

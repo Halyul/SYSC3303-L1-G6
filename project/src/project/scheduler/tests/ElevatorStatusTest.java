@@ -16,61 +16,86 @@ class ElevatorStatusTest {
     @Test
     void setCurrentStatusTest() {
         e.setCurrentStatus("Idle");
-        Assertions.assertEquals("Idle",e.getCurrentStatus());
+        Assertions.assertEquals("Idle", e.getCurrentStatus());
     }
 
     @Test
     void getCurrentStatusTest() {
         e.setCurrentStatus("Stop");
-        Assertions.assertEquals("Stop",e.getCurrentStatus());
+        Assertions.assertEquals("Stop", e.getCurrentStatus());
     }
 
     @Test
     void setCurrentActionTest() {
         e.setCurrentAction(7);
-        Assertions.assertEquals(7,e.getCurrentAction());
+        Assertions.assertEquals(7, e.getCurrentAction());
     }
 
     @Test
     void getCurrentActionTest() {
         e.setCurrentAction(5);
-        Assertions.assertNotEquals(3,e.getCurrentAction());
+        Assertions.assertNotEquals(3, e.getCurrentAction());
     }
 
     @Test
     void setCurrentLocationTest() {
         e.setCurrentLocation(15);
-        Assertions.assertEquals(15,e.getCurrentLocation());
+        Assertions.assertEquals(15, e.getCurrentLocation());
     }
 
     @Test
     void getCurrentLocationTest() {
         e.setCurrentLocation(15);
-        Assertions.assertNotEquals(7,e.getCurrentLocation());
+        Assertions.assertNotEquals(7, e.getCurrentLocation());
     }
 
     @Test
-    void addNextStopTest() {
+    void setDirectionTest() {
+        e.setDirection(0);
+        Assertions.assertNotEquals(1, e.getDirection());
+    }
+
+    @Test
+    void getDirectionTest() {
+        e.setDirection(1);
+        Assertions.assertEquals(1, e.getDirection());
+    }
+
+    @Test
+    void getIdTest() {
+        Assertions.assertEquals(1, e.getId());
+    }
+
+    @Test
+    void addLastActionTest() {
         e.addLastAction(15);
         e.addLastAction(7);
         e.addLastAction(14);
-        Assertions.assertEquals(15,e.popNextStop());
-        Assertions.assertEquals(7,e.popNextStop());
-        Assertions.assertEquals(14,e.popNextStop());
+        Assertions.assertEquals(15, e.popNextStop());
+        Assertions.assertEquals(7, e.popNextStop());
+        Assertions.assertEquals(14, e.popNextStop());
     }
 
     @Test
-    void popNextStop() {
+    void popNextStopTest() {
         e.addLastAction(15);
         e.addLastAction(7);
         e.addLastAction(14);
         e.popNextStop();    //pop floor 15
-        Assertions.assertEquals(7,e.popNextStop());
-        Assertions.assertEquals(14,e.popNextStop());
+        Assertions.assertEquals(7, e.popNextStop());
+        Assertions.assertEquals(14, e.popNextStop());
     }
 
     @Test
-    void actionListEmpty() {
+    void getLastActionTest() {
+        e.addLastAction(15);
+        e.addLastAction(7);
+        e.addLastAction(14);
+        Assertions.assertEquals(14, e.getLastAction());
+    }
+
+    @Test
+    void actionListEmptyTest() {
         e.addLastAction(15);
         Assertions.assertFalse(e.actionListEmpty());
 
@@ -79,7 +104,7 @@ class ElevatorStatusTest {
     }
 
     @Test
-    void isIdle() {
+    void isIdleTest() {
         e.setCurrentStatus("Idle");
         Assertions.assertTrue(e.isIdle());
 
