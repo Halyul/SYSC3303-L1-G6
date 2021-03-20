@@ -35,13 +35,15 @@ class ElevatorTest {
     @Test
     @DisplayName("Move to different floor to pick up user and move to 1")   
     public void testMoveToDifferentFloorPickUpMoveTo1() {
-        byte[] string = "state:Move;floor:3;".getBytes();
+        byte[] string = "state:Move;floor:4;".getBytes();
         e.put(string);
         e.execute(); // 1st to 2nd floor
         assertEquals("Move", e.getState(), "The elevator not in Move");
         e.execute(); // 2nd to 3rd floor
         assertEquals("Move", e.getState(), "The elevator not in Move");
-        e.execute(); // stop at 3rd
+        e.execute(); // 3rf to 4th floor
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // stop at 4th
         assertEquals("Stop", e.getState(), "The elevator not in Stop");
         e.execute();
         assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
@@ -50,6 +52,8 @@ class ElevatorTest {
         e.execute();
         string = "state:Move;floor:1;".getBytes();
         e.put(string);
+        e.execute(); // 4th to 3rd floor
+        assertEquals("Move", e.getState(), "The elevator not in Move");
         e.execute(); // 3rd to 2nd floor
         assertEquals("Move", e.getState(), "The elevator not in Move");
         e.execute(); // 2nd to 1st floor
@@ -119,7 +123,7 @@ class ElevatorTest {
         assertEquals("Stop", e.getState(), "The elevator not in Move");
         e.execute();
         assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
-        // the scheduler should know the arrival sensor at 5th floor has failed
+        // the scheduler should know the arrival sensor at 3th floor has failed
         string = "state:Error;".getBytes();
         e.put(string);
         e.execute();

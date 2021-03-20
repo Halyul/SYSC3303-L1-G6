@@ -239,7 +239,7 @@ public class Elevator implements Runnable {
                 this.errorMessage = "stuckBetweenFloors";
                 return state.Error;
             }
-            this.speed = arrivalSensors.get(buttonIndex(this.currentFloor)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
+            this.speed = arrivalSensors.get(buttonIndex(this.currentFloor + 1)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
             this.currentFloor++;
             if (this.currentFloor == this.destFloor && this.arrivalSensorFailed) {
                 if (this.isSimulated) {
@@ -256,7 +256,7 @@ public class Elevator implements Runnable {
             this.direction = 0;
             directionLamp.on();
             motor.down(this.speed);
-            this.speed = arrivalSensors.get(buttonIndex(this.currentFloor)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
+            this.speed = arrivalSensors.get(buttonIndex(this.currentFloor - 1)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
             if (this.stuckBetweenFloors) {
                 this.errorMessage = "stuckBetweenFloors";
                 return state.Error;
