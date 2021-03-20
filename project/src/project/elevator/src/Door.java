@@ -9,6 +9,8 @@ public class Door {
     
     /**
      * To simulate the action of opening the door
+     * @param stuckAtClose true to set the door to be not able to open
+     * @return true if the door is working properly, false otherwise
      */
     public boolean open(boolean stuckAtClose) {
         if (!stuckAtClose) {
@@ -33,6 +35,8 @@ public class Door {
     
     /**
      * To simulate the action of closing the door
+     * @param stuckAtOpen true to set the door to be not able to close
+     * @return true if the door is working properly, false otherwise
      */
     public boolean close(boolean stuckAtOpen) {
         if (!stuckAtOpen) {

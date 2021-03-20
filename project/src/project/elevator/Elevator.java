@@ -188,6 +188,10 @@ public class Elevator implements Runnable {
         parser.parse(revMsg);
         String state = parser.getState();
         if (state.equals("Received")) {
+            if (this.schedulerCommand.getState().equals("Error")) {
+                this.errorMessage = "schedulerReportedError";
+                return State.Error;
+            }
             return State.CloseDoor;
         } else {
             return State.Error;
@@ -237,8 +241,15 @@ public class Elevator implements Runnable {
             }
             this.speed = arrivalSensors.get(buttonIndex(this.currentFloor)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
             this.currentFloor++;
-            floorLamps.get(buttonIndex(this.currentFloor - 1)).off();
-            floorLamps.get(buttonIndex(this.currentFloor)).on();
+            if (this.currentFloor == this.destFloor && this.arrivalSensorFailed) {
+                if (this.isSimulated) {
+                    floorLamps.get(buttonIndex(this.currentFloor - 2)).off();
+                    floorLamps.get(buttonIndex(this.currentFloor)).on();
+                }
+            } else {
+                floorLamps.get(buttonIndex(this.currentFloor - 1)).off();
+                floorLamps.get(buttonIndex(this.currentFloor)).on();
+            }
         } else if (difference < 0) {
             // going down
             directionLamp = this.downLamp;
@@ -251,8 +262,11 @@ public class Elevator implements Runnable {
                 return state.Error;
             }
             this.currentFloor--;
-            if (this.currentFloor == this.destFloor && this.arrivalSensorFailed && !this.isSimulated) {
-                // do nothing
+            if (this.currentFloor == this.destFloor && this.arrivalSensorFailed) {
+                if (this.isSimulated) {
+                    floorLamps.get(buttonIndex(this.currentFloor + 2)).off();
+                    floorLamps.get(buttonIndex(this.currentFloor)).on();
+                }
             } else {
                 floorLamps.get(buttonIndex(this.currentFloor + 1)).off();
                 floorLamps.get(buttonIndex(this.currentFloor)).on();

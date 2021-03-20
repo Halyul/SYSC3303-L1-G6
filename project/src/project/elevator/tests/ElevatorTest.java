@@ -91,4 +91,74 @@ class ElevatorTest {
         assertEquals("Stationary", e.getState(), "The elevator not in Stationary");
     }
 
+    @Test
+    @DisplayName("Simulate stuckBetweenFloors")
+    public void testSimulateStuckBetweenFloors() {
+        byte[] string = "state:stuckBetweenFloors;floor:3;".getBytes();
+        e.put(string);
+        e.execute();
+        // start moving
+        assertEquals("Move", e.getState(), "The elevator not in Error");
+        // immediately stuck
+        e.execute();
+        assertEquals("Error", e.getState(), "The elevator not in Move");
+    }
+
+    @Test
+    @DisplayName("Simulate arrivalSensorFailed")
+    public void testSimulateArrivalSensorFailed() {
+        byte[] string = "state:arrivalSensorFailed;floor:3;".getBytes();
+        e.put(string);
+        e.execute();
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // 2nd to 3rd floor
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // should go pass 3
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // then stop at 4
+        assertEquals("Stop", e.getState(), "The elevator not in Move");
+        e.execute();
+        assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
+        // the scheduler should know the arrival sensor at 5th floor has failed
+        string = "state:Error;".getBytes();
+        e.put(string);
+        e.execute();
+        assertEquals("Error", e.getState(), "The elevator not in Error");
+    }
+
+    @Test
+    @DisplayName("Simulate doorStuckAtOpen")
+    public void testSimulateDoorStuckAtOpen() {
+        byte[] string = "state:doorStuckAtOpen;floor:3;".getBytes();
+        e.put(string);
+        e.execute();
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // 2nd to 3rd floor
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // then stop at 3
+        assertEquals("Stop", e.getState(), "The elevator not in Move");
+        e.execute();
+        assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
+        e.execute();
+        assertEquals("CloseDoor", e.getState(), "The elevator not in CloseDoor");
+        e.execute();
+        assertEquals("Error", e.getState(), "The elevator not in Error");
+    }
+
+    @Test
+    @DisplayName("Simulate doorStuckAtClose")
+    public void testSimulateDoorStuckAtClose() {
+        byte[] string = "state:doorStuckAtClose;floor:3;".getBytes();
+        e.put(string);
+        e.execute();
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // 2nd to 3rd floor
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // then stop at 3
+        assertEquals("Stop", e.getState(), "The elevator not in Move");
+        e.execute();
+        assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
+        e.execute();
+        assertEquals("Error", e.getState(), "The elevator not in Error");
+    }
 }

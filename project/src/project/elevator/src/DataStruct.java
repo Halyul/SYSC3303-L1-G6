@@ -1,17 +1,17 @@
 package project.elevator.src;
 
 public class DataStruct {
-    private String state;
+    private String state = "";
     private int floor;
     private boolean iswaiting = false;
-    private String error = null;
+    private String error = "";
     
     public DataStruct() {
         finished();
     }
     
     public void setState(String state, int floor) {
-        if (!state.equals("Move") || !state.equals("Error")) {
+        if (!state.equals("Move") && !state.equals("Error")) {
             this.error = state;
             state = "Move";
         }

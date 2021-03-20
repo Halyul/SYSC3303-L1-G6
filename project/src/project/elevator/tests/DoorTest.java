@@ -28,14 +28,10 @@ class DoorTest {
     @DisplayName("Set the stuck state of the door should work")   
     public void testSetStuck() {
         Door door = new Door();
-        assertTrue(door.getState(), "The door should be open");
-        assertTrue(door.getStuckAtOpen(), "Stuck at open should work");
         door.close(true);
-        assertTrue(door.getState(), "Stuck at open should work");
+        assertFalse(door.getState(), "Stuck at open should work");
         
         door = new Door();
-        assertFalse(door.getState(), "The door should be close");
-        assertTrue(door.getStuckAtClose(), "Stuck at close should work");
         door.open(true);
         assertFalse(door.getState(), "Stuck at close should work");
     }
