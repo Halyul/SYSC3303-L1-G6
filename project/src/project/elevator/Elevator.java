@@ -26,9 +26,14 @@ public class Elevator implements Runnable {
     // speed
     private double speed = 0;
     // simulate stuck between floors
-    private boolean stuckBetweenFloors;
-    // simulate udp lose packet
-    private boolean toLosePacket;
+    private boolean stuckBetweenFloors = false;
+    // simulate arrival sensor has failed
+    private boolean arrivalSensorFailed = false;
+    private boolean isSimulated = false;
+    // simulate door stuck at open;
+    private boolean doorStuckAtOpen = false;
+    // simulate door stuck at close;
+    private boolean doorStuckAtClose = false;
     
     private InetAddress schedulerAddress;
     private int schedulerPort;
@@ -61,13 +66,10 @@ public class Elevator implements Runnable {
      * @param currentFloor initial floor
      * @param totalGroundFloors The number of ground floors
      * @param totalUndergroundFloors The number of underground floors
-     * @param doorStuckAtOpen if the door is stuck at open
-     * @param doorStuckAtClose if the door is stuck at close
-     * @param stuckBetweenFloors if the elevator is stuck between floors
      * @param schedulerAddress the address of the scheduler
      * @param port the port of the scheduler
      */
-    public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, boolean toLosePacket, InetAddress schedulerAddress, int port) {
+    public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, InetAddress schedulerAddress, int port) {
         // needs update here
         this.sender = new Sender();
         
@@ -75,9 +77,7 @@ public class Elevator implements Runnable {
         this.totalUndergroundFloors = totalUndergroundFloors;
         this.identifier = identifier;
         this.currentFloor = currentFloor;
-        this.door = new Door(doorStuckAtOpen, doorStuckAtClose);
-        this.stuckBetweenFloors = stuckBetweenFloors;
-        this.toLosePacket = toLosePacket;
+        this.door = new Door();
         for(int i = this.totalUndergroundFloors; i <= this.totalGroundFloors; i++) {
             if (i != 0) {
                 buttons.add(new ElevatorButton(i));
@@ -137,7 +137,18 @@ public class Elevator implements Runnable {
             if (state.equals("Check")) {
                 String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
             } else if (state.equals("Move")) {
-            	// check if it is the same floor?
+                // inject faults
+                String error = this.schedulerCommand.getError();
+                if (error.equals("stuckBetweenFloors")) {
+                    this.stuckBetweenFloors = true;
+                } else if (error.equals("arrivalSensorFailed")) {
+                    this.arrivalSensorFailed = true;
+                } else if (error.equals("doorStuckAtOpen")) {
+                    this.doorStuckAtOpen = true;
+                } else if (error.equals("doorStuckAtClose")) {
+                    this.doorStuckAtClose = true;
+                }
+
                 int destFloor = this.schedulerCommand.getFloor();
                 this.destFloor = destFloor;
                 if (destFloor == this.currentFloor) {
@@ -155,6 +166,9 @@ public class Elevator implements Runnable {
                 String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
                 this.isSentIdleMessage = false;
                 return State.Move;
+            } else if (state.equals("Error")) {
+                this.errorMessage = "schedulerReportedError";
+                return State.Error;
             }
         }
         return State.Stationary;
@@ -165,7 +179,7 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State openDoor() {
-        boolean isOpened = door.open();
+        boolean isOpened = door.open(this.doorStuckAtClose);
         if (!isOpened) {
             this.errorMessage = "doorStuckAtOpen";
             return State.Error;
@@ -185,7 +199,7 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State closeDoor() {
-        boolean isClosed = door.close();
+        boolean isClosed = door.close(this.doorStuckAtOpen);
         if (!isClosed) {
             this.errorMessage = "doorStuckAtClose";
             return State.Error;
@@ -237,11 +251,27 @@ public class Elevator implements Runnable {
                 return state.Error;
             }
             this.currentFloor--;
-            floorLamps.get(buttonIndex(this.currentFloor + 1)).off();
-            floorLamps.get(buttonIndex(this.currentFloor)).on();
+            if (this.currentFloor == this.destFloor && this.arrivalSensorFailed && !this.isSimulated) {
+                // do nothing
+            } else {
+                floorLamps.get(buttonIndex(this.currentFloor + 1)).off();
+                floorLamps.get(buttonIndex(this.currentFloor)).on();
+            }
         }
         
         if (this.currentFloor == this.destFloor) {
+            if (this.arrivalSensorFailed && !this.isSimulated) {
+                // simulate the arrival sensor at destFloor has failed
+                // the elevator should go pass this floor, and reach next floor
+                if (difference > 0) {
+                    this.destFloor++;
+                } else if (difference < 0) {
+                    this.destFloor--;
+                }
+                this.speed = motor.getMaxSpeed();
+                this.isSimulated = true;
+                return State.Move;
+            }
             return State.Stop;
         }
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
@@ -290,16 +320,16 @@ public class Elevator implements Runnable {
             motor.stop();
         }
         while(true) {
-            try {
-                Thread.sleep((long) (500));
-            } catch(InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
             String revMsg = sender.sendError(this.getClass().getSimpleName(), this.identifier, this.errorMessage, this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
             parser.parse(revMsg);
             String state = parser.getState();
             if (state.equals("Received")) {
                 break;
+            }
+            try {
+                Thread.sleep((long) (500));
+            } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -366,32 +396,7 @@ public class Elevator implements Runnable {
 	   	int numberOfElevators = 4;
 	   	ArrayList<Elevator> elevators = new ArrayList<Elevator>();
 	   	ArrayList<Thread> elevatorThreads = new ArrayList<Thread>();
-        
-        // inject faults
-        boolean doorStuckAtOpen[] = {
-            false,
-            false,
-            false,
-            false
-        };
-        boolean doorStuckAtClose[] = {
-            false,
-            false,
-            false,
-            false
-        };
-        boolean stuckBetweenFloors[] = {
-            false,
-            false,
-            false,
-            false
-        };
-        boolean toLosePacket[] = {
-            false,
-            false,
-            false,
-            false
-        };
+
 	   	try {
 	   		schedulerAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -399,7 +404,7 @@ public class Elevator implements Runnable {
 			System.exit(1);
 		}
 	   	for (int i = 0; i < numberOfElevators; i++) {
-	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, doorStuckAtOpen[i], doorStuckAtClose[i], stuckBetweenFloors[i], toLosePacket[i], schedulerAddress, 12000);
+	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, schedulerAddress, 12000);
 	   		elevators.add(elevator);
 	   		Thread elevatorThread = new Thread(elevator, "Elevator " + (i + 1));
 	   		elevatorThreads.add(elevatorThread);

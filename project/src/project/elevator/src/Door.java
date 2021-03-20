@@ -4,24 +4,13 @@ public class Door {
     // The time the doors take to open and close in seconds
     private static final double doorTime = 9.3; 
     private boolean isOpened = false;
-    private boolean stuckAtOpen;
-    private boolean stuckAtClose;
-    
-    public Door(boolean stuckAtOpen, boolean stuckAtClose) {
-        this.stuckAtOpen = stuckAtOpen;
-        this.stuckAtClose = stuckAtClose;
-        if (stuckAtOpen) {
-            this.isOpened = true;
-        }
-        if (stuckAtClose) {
-            this.isOpened = false;
-        }
-    }
+
+    public Door() { }
     
     /**
      * To simulate the action of opening the door
      */
-    public boolean open() {
+    public boolean open(boolean stuckAtClose) {
         if (!stuckAtClose) {
             if (!isOpened) {
                 System.out.println(Thread.currentThread().getName() + ": Door is opening.");
@@ -45,7 +34,7 @@ public class Door {
     /**
      * To simulate the action of closing the door
      */
-    public boolean close() {
+    public boolean close(boolean stuckAtOpen) {
         if (!stuckAtOpen) {
             if (isOpened) {
                 System.out.println(Thread.currentThread().getName() + ": Door is closing.");
@@ -73,20 +62,5 @@ public class Door {
     public boolean getState() {
         return this.isOpened;
     }
-    
-    /**
-     * Check if the door is stuck at open
-     * @return as described above
-     */
-    public boolean getStuckAtOpen() {
-        return this.stuckAtOpen;
-    }
-    
-    /**
-     * Check if the door is stuck at close
-     * @return as described above
-     */
-    public boolean getStuckAtClose() {
-        return this.stuckAtClose;
-    }
+
 }
