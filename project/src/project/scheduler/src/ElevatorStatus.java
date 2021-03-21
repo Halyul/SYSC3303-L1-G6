@@ -103,7 +103,7 @@ public class ElevatorStatus {
     }
 
     /**
-     * set the elevator's next action list
+     * Set the elevator's next action list
      */
     public void setNextActionList(ArrayList<Integer> nextActionList) {
         this.nextActionList = nextActionList;
@@ -119,7 +119,7 @@ public class ElevatorStatus {
     }
 
     /**
-     * get the last action of the elevator
+     * Get the last action of the elevator
      */
     public int getLastAction() {
         if (this.nextActionList.size() == 0) {
@@ -129,14 +129,14 @@ public class ElevatorStatus {
     }
 
     /**
-     * check if the next action list is empty
+     * Check if the next action list is empty
      */
     public boolean actionListEmpty() {
         return this.nextActionList.size() == 0;
     }
 
     /**
-     * check if the elevator is Idle
+     * Check if the elevator is Idle
      */
     public boolean isIdle() {
         return this.currentStatus.equals("Idle");
