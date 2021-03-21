@@ -33,7 +33,6 @@ public class Receiver implements Runnable {
 	    this.receivePacket = new DatagramPacket(data, data.length);
 	    try {
 	    	this.receiveSocket.receive(this.receivePacket);
-	    	parse();
 	    } catch(IOException e) {
 	    	e.printStackTrace();
 	    	System.exit(1);
