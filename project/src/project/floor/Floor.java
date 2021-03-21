@@ -189,9 +189,30 @@ public class Floor implements Runnable{
 					if(baseTime == 0) {
 						baseTime = inputTime;
 					}
-					//TODO: Send message and add people to queue based on time
 					Thread.sleep((long) (inputTime - baseTime));
-					send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, "Reading");
+					if(individualIns[4] != null) {	//If there is a 5th argument
+						String state ="";
+						switch(individualIns[4]) {	//determine which fault to inject
+							case "stuckBetweenFloors":
+								state ="stuckBetweenFloors";
+								break;
+							case "arrivalSensorFailed":
+								state = "arrivalSensorFailed";
+								break;
+							case "doorStuckAtOpen":
+								state = "doorStuckAtOpen";
+								break;
+							case "doorStuckAtClose":
+								state = "doorStuckAtClose";
+								break;
+							default:
+								throw new IllegalArgumentException("Invalid fault: "+ state);	//throw exception if fault not known
+						}
+						send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, state);
+					}
+					else {
+						send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, "Reading");
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -209,7 +230,6 @@ public class Floor implements Runnable{
 		ReadInput("floorInput.txt");
 		while(true) {
 			get();
-			
 		}
 	}
 	
