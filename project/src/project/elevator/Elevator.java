@@ -168,7 +168,7 @@ public class Elevator implements Runnable {
                 return State.Move;
             } else if (state.equals("Error")) {
                 this.errorMessage = "schedulerReportedError";
-                return State.Error;
+                return State.OpenDoor;
             }
         }
         return State.Stationary;
@@ -215,6 +215,10 @@ public class Elevator implements Runnable {
             if (!this.schedulerCommand.isWaiting()) {
                 return State.Stationary;
             } else {
+                if (this.schedulerCommand.getState().equals("Error")) {
+                    this.errorMessage = "schedulerReportedError";
+                    return State.OpenDoor;
+                }
                 this.destFloor = this.schedulerCommand.getFloor();
                 return State.Move;
             }

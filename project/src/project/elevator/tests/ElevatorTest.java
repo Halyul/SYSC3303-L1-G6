@@ -109,8 +109,8 @@ class ElevatorTest {
     }
 
     @Test
-    @DisplayName("Simulate arrivalSensorFailed")
-    public void testSimulateArrivalSensorFailed() {
+    @DisplayName("Simulate arrivalSensorFailed before CloseDoor")
+    public void testSimulateArrivalSensorFailedBeforeCloseDoor() {
         byte[] string = "state:arrivalSensorFailed;floor:3;".getBytes();
         e.put(string);
         e.execute();
@@ -124,8 +124,36 @@ class ElevatorTest {
         e.execute();
         assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
         // the scheduler should know the arrival sensor at 3th floor has failed
+        // and the timer should have expired
         string = "state:Error;".getBytes();
         e.put(string);
+        e.execute();
+        assertEquals("Error", e.getState(), "The elevator not in Error");
+    }
+
+    @Test
+    @DisplayName("Simulate arrivalSensorFailed at CloseDoor")
+    public void testSimulateArrivalSensorFailedAtCloseDoor() {
+        byte[] string = "state:arrivalSensorFailed;floor:3;".getBytes();
+        e.put(string);
+        e.execute();
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // 2nd to 3rd floor
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // should go pass 3
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        e.execute(); // then stop at 4
+        assertEquals("Stop", e.getState(), "The elevator not in Move");
+        e.execute();
+        assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
+        e.execute();
+        assertEquals("CloseDoor", e.getState(), "The elevator not in CloseDoor");
+        // the scheduler should know the arrival sensor at 3th floor has failed
+        // and the timer should have expired
+        string = "state:Error;".getBytes();
+        e.put(string);
+        e.execute();
+        assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
         e.execute();
         assertEquals("Error", e.getState(), "The elevator not in Error");
     }
