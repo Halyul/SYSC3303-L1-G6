@@ -190,7 +190,7 @@ public class Floor implements Runnable{
 						baseTime = inputTime;
 					}
 					Thread.sleep((long) (inputTime - baseTime));
-					if(individualIns[4] != null) {	//If there is a 5th argument
+					if(individualIns.length == 5) {	//If there is a 5th argument
 						String state ="";
 						switch(individualIns[4]) {	//determine which fault to inject
 							case "stuckBetweenFloors":
@@ -208,7 +208,8 @@ public class Floor implements Runnable{
 							default:
 								throw new IllegalArgumentException("Invalid fault: "+ state);	//throw exception if fault not known
 						}
-						send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, state);
+						if(!state.equals(""))
+							send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, state);
 					}
 					else {
 						send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, "Reading");
