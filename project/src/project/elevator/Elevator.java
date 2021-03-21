@@ -8,7 +8,7 @@ import project.utils.*;
 
 public class Elevator implements Runnable {
     private State state = State.Stationary;
-    
+    private boolean running = true;
     // floor height
     private static final double floorHeight = 3.57; 
     // The number of ground floors
@@ -105,9 +105,8 @@ public class Elevator implements Runnable {
             this.state = move();
         } else if (this.state == State.Stop) {
             this.state = stop();
-        } else {
+        } else if (this.state == State.Error) {
             error();
-            System.exit(-1);
         }
     }
     
@@ -334,14 +333,14 @@ public class Elevator implements Runnable {
      * The elevator will try to contact the Scheduler about the error and then shutdown for safety reasons
      */
     private void error() {
-        if(this.state == State.Move) {
-            motor.stop();
-        }
+        motor.stop();
         while(true) {
+            System.out.println(Thread.currentThread().getName() + ": " + this.errorMessage);
             String revMsg = sender.sendError(this.getClass().getSimpleName(), this.identifier, this.errorMessage, this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
             parser.parse(revMsg);
             String state = parser.getState();
             if (state.equals("Received")) {
+                this.running = false;
                 break;
             }
             try {
@@ -404,7 +403,7 @@ public class Elevator implements Runnable {
      */
    @Override
     public void run() {
-        while(true) {
+        while(running) {
             execute();
         }
     }

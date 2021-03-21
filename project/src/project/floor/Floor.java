@@ -190,7 +190,7 @@ public class Floor implements Runnable{
 						baseTime = inputTime;
 					}
 					Thread.sleep((long) (inputTime - baseTime));
-					String state = "Moving";
+					String state = "Move";
 					if(individualIns.length == 5) {	//If there is a 5th argument
 						switch(individualIns[4]) {	//determine which fault to inject
 							case "stuckBetweenFloors":
