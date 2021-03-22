@@ -15,7 +15,7 @@ class ErrorHandlingTask extends TimerTask {
     }
 
     public void run() {
-        System.out.println("Times up, error declare on Elevator " + id);
+        System.out.println("Times up, error detected on Elevator " + id);
         this.elevatorStatusArrayList.addErrorElevator(id);
     }
 }

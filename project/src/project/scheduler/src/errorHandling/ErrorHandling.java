@@ -15,7 +15,6 @@ public class ErrorHandling {
         TimerTask task = new ErrorHandlingTask(elevatorStatusArrayList, id);
         taskTimer.schedule(task,5000);
         timerArrayList.add(taskTimer);
-        System.out.println("Timer Start: " + id);
     }
 
     public void cancelTimer(int id){
@@ -31,18 +30,13 @@ public class ErrorHandling {
 
             if (timeToRemove != null) {
                 this.timerArrayList.remove(timeToRemove);
-                System.out.println("Timer canceled: " + timeToRemove.getId());
-                System.out.println("cancelTimer: Timer list size" + this.timerArrayList.size());
             }
-        }else{
-            System.out.println("Timer isn't exist!");
         }
     }
 
     public void restartTimer(ElevatorStatusArrayList elevatorStatusArrayList, int id){
         this.cancelTimer(id);
         this.startTimer(elevatorStatusArrayList,id);
-        System.out.println("Timer list size" + this.timerArrayList.size());
     }
 
     private boolean timerExist(int id){

@@ -164,14 +164,11 @@ public class Scheduler implements Runnable {
 
         if (!this.elevatorStatusArrayList.ifElevatorError(elevatorID)) {
             if (this.parser.getState().equals("Idle")) {      // Idle state, stop timer
-                System.out.println(new String(this.parser.formatMessage()));
                 this.errorHandling.cancelTimer(elevatorID);
             } else if (this.parser.getState().equals("Error")) {
-                System.out.println(new String(this.parser.formatMessage()));
                 this.errorHandling.cancelTimer(elevatorID);
                 this.elevatorStatusArrayList.addErrorElevator(elevatorID);      // set local elevator status to error
             } else {  // receive elevator message, restart timer
-                System.out.println(new String(this.parser.formatMessage()));
                 this.errorHandling.restartTimer(this.elevatorStatusArrayList, elevatorID);
             }
 
