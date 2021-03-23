@@ -35,6 +35,9 @@ public class DataStruct {
         this.iswaiting = false;
     }
 
+    /**
+     * Wait for next scheduler command
+     */
     public synchronized void waitForCommand() {
         while (!this.iswaiting) {
             try {
