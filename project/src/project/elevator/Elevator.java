@@ -57,8 +57,6 @@ public class Elevator implements Runnable {
     private volatile DataStruct schedulerCommand = new DataStruct();
     // error message
     private String errorMessage;
-    // idle message state
-    private boolean isSentIdleMessage = false;
     
     /**
      * Elevator constructor
@@ -126,51 +124,49 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State stationary() {
-    	if (!this.isSentIdleMessage) {
-    		String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-    		this.isSentIdleMessage = true;
-            System.out.println("Elevator " + this.identifier + ": Current stationary");
-    	}
-        if (this.schedulerCommand.isWaiting()) {
-            String state = this.schedulerCommand.getState();
-            if (state.equals("Check")) {
-                String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-            } else if (state.equals("Move")) {
-                // inject faults
-                String error = this.schedulerCommand.getError();
-                if (error.equals("stuckBetweenFloors")) {
-                    this.stuckBetweenFloors = true;
-                } else if (error.equals("arrivalSensorFailed")) {
-                    this.arrivalSensorFailed = true;
-                } else if (error.equals("doorStuckAtOpen")) {
-                    this.doorStuckAtOpen = true;
-                } else if (error.equals("doorStuckAtClose")) {
-                    this.doorStuckAtClose = true;
-                }
-
-                int destFloor = this.schedulerCommand.getFloor();
-                this.destFloor = destFloor;
-                if (destFloor == this.currentFloor) {
-                	// same floor, use State Stop because the elevator need to clean up the command
-                	this.isSentIdleMessage = false;
-                	return State.Stop;
-                }
-                int difference = this.destFloor - this.currentFloor;
-                if (difference > 0) {
-                    // going up
-                    this.direction = 1;
-                } else if (difference < 0) {
-                    this.direction = 0;
-                }
-                String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-                this.isSentIdleMessage = false;
-                return State.Move;
-            } else if (state.equals("Error")) {
-                this.errorMessage = "schedulerReportedError";
-                return State.OpenDoor;
+        String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
+        System.out.println("Elevator " + this.identifier + ": Current stationary");
+        this.schedulerCommand.waitForCommand();
+        String state = this.schedulerCommand.getState();
+        if (state.equals("Check")) {
+            revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
+            this.schedulerCommand.finished();
+            return State.Stationary;
+        } else if (state.equals("Move")) {
+            // inject faults
+            String error = this.schedulerCommand.getError();
+            if (error.equals("stuckBetweenFloors")) {
+                this.stuckBetweenFloors = true;
+            } else if (error.equals("arrivalSensorFailed")) {
+                this.arrivalSensorFailed = true;
+            } else if (error.equals("doorStuckAtOpen")) {
+                this.doorStuckAtOpen = true;
+            } else if (error.equals("doorStuckAtClose")) {
+                this.doorStuckAtClose = true;
             }
+
+            int destFloor = this.schedulerCommand.getFloor();
+            this.destFloor = destFloor;
+            if (destFloor == this.currentFloor) {
+                // same floor, use State Stop because the elevator need to clean up the command
+                return State.Stop;
+            }
+            int difference = this.destFloor - this.currentFloor;
+            if (difference > 0) {
+                // going up
+                this.direction = 1;
+            } else if (difference < 0) {
+                this.direction = 0;
+            }
+            revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
+            return State.Move;
+        } else if (state.equals("Error")) {
+            this.errorMessage = "schedulerReportedError";
+            return State.OpenDoor;
+        } else {
+            this.errorMessage = "unknownStateError";
+            return State.Error;
         }
-        return State.Stationary;
     }
     
     /**
