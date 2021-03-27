@@ -1,5 +1,5 @@
 SYSC3303-L1-G6
-Iteration 3
+Iteration 4
 
 Files included:
 - Source Code:
@@ -24,12 +24,20 @@ Files included:
     - project/.gitignore
 
 - UML:
-    - Documentation/Iteration3/class_diagram_elevator.png: class diagram for elevator subsystem
-    - Documentation/Iteration3/class_diagram_floor.png: class diagram for floor subsystem
-    - Documentation/Iteration3/class_diagram_scheduler.png: class diagram for scheduler subsystem
-    - Documentation/Iteration3/seq_diagram.png: sequence diagram
-    - Documentation/Iteration3/state_diagram_elevator.png: state diagram for elevator subsystem
-    - Documentation/Iteration3/state_diagram_scheduler.png: state diagram for scheduler subsystem
+    - Documentation/Iteration4/class_diagram_elevator.png: class diagram for elevator subsystem
+    - Documentation/Iteration4/class_diagram_floor.png: class diagram for floor subsystem
+    - Documentation/Iteration4/class_diagram_scheduler.png: class diagram for scheduler subsystem
+    - Documentation/Iteration4/seq_diagram.png: sequence diagram
+    - Documentation/Iteration4/state_diagram_elevator.png: state diagram for elevator subsystem
+    - Documentation/Iteration4/state_diagram_scheduler.png: state diagram for scheduler subsystem
+    - Documentation/Iteration4/TimingDiagram1.jpg: timing diagram for the 
+    elevator get stuck between floors error
+    - Documentation/Iteration4/TimingDiagram2.jpg: timing diagram for the 
+    arrival sensor failed error
+    - Documentation/Iteration4/TimingDiagram3.jpg: timing diagram for the 
+    door get stuck at open error
+    - Documentation/Iteration4/TimingDiagram4.jpg: timing diagram for the 
+    door gets stuck at close error
 
 Setup instructions:
     - This program runs on Eclipse v4.18.0
@@ -38,9 +46,11 @@ Setup instructions:
     - Run "Elevator.java" under project/src/elevator folder
     - Run "Floor.java" under project/src/floor folder
     - Three programs will not automatically terminate, this is an intended behaviour.
+    - To test faults, replace the content of "project/floorInput.txt" from the 
+    "project/floorInput_faults.txt"
 
 Responsibilities:
     - Zijun Hu: project.scheduler.*, class_diagram_elevator.png, class_diagram_scheduler.png
-    - Haoyu Xu: project.elevator.*, project.utils.*
-    - Bingtao Liu: project.scheduler.*
-    - Lyam Milbury: project.floor.*, class_diagram_floor.png
+    - Haoyu Xu: project.elevator.*, TimingDiagram*.jpg
+    - Bingtao Liu: project.scheduler.*, TimingDiagram*.jpg
+    - Lyam Milbury: project.floor.*
