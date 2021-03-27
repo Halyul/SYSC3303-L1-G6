@@ -1,25 +1,24 @@
 /*
-  Author: Zijun Hu
+    Author: Zijun Hu
 
-  This is the class for scheduler. The scheduler handle the message from the Elevator/floor subsystem.
+    This is the class for scheduler. The scheduler handle the message from the Elevator/floor subsystem.
  */
 
 package project.scheduler;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.time.ZoneOffset;
-import java.time.LocalDateTime;
-import java.util.Collections;
+import java.net.*;
+import java.util.*;
+import java.time.*;
 
 import project.utils.*;
 import project.scheduler.src.*;
+import project.scheduler.src.errorHandling.ErrorHandling;
 
 public class Scheduler implements Runnable {
     private final Database db;
     private final Sender sender = new Sender();
-    private final ArrayList<ElevatorStatus> elevatorStatusArrayList = new ArrayList<>();
+    private final ElevatorStatusArrayList elevatorStatusArrayList = new ElevatorStatusArrayList();
+    private final ErrorHandling errorHandling = new ErrorHandling();
     private final int totalFloorNumber;
     private SchedulerState schedulerState;
     private Parser parser = new Parser();
@@ -27,6 +26,15 @@ public class Scheduler implements Runnable {
     private final int elevatorPort;
     private final int floorPort;
 
+    /**
+     * initialization
+     *
+     * @param db                  message data base
+     * @param totalElevatorNumber total elevator number
+     * @param totalFloorNumber    total floor number
+     * @param address             default IP address
+     * @param defaultPort         default port number
+     */
     public Scheduler(Database db, int totalElevatorNumber, int totalFloorNumber, InetAddress address, int defaultPort) {
         this.db = db;
         this.systemAddress = address;
@@ -34,7 +42,7 @@ public class Scheduler implements Runnable {
         this.floorPort = defaultPort + 200;
         this.schedulerState = SchedulerState.WaitMessage;
         for (int i = 1; i <= totalElevatorNumber; i++) {
-            this.elevatorStatusArrayList.add(new ElevatorStatus(i));
+            this.elevatorStatusArrayList.addElevator(new ElevatorStatus(i));
         }
         this.totalFloorNumber = totalFloorNumber;
     }
@@ -61,22 +69,25 @@ public class Scheduler implements Runnable {
     private void parseFloorMessage() {
         int userLocation = this.parser.getIdentifier();
         int userDest = this.parser.getFloor();
+        String state = this.parser.getState();
         int distance = this.totalFloorNumber;
         int bestElevatorToMoveId = 0;
 
-        for (ElevatorStatus e : this.elevatorStatusArrayList) {
-            boolean fit = false;
-            if (e.getCurrentStatus().equals("Idle")) {      // elevator in idle state
-                fit = true;
-            } else {        // elevator is current moving
-                if (this.parser.getDirection() == e.getDirection() && this.inPickUpRange(e.getDirection(), e.getCurrentLocation(), e.getLastAction(), userLocation)) {
+        for (ElevatorStatus e : this.elevatorStatusArrayList.getList()) {
+            if (!this.elevatorStatusArrayList.ifElevatorError(e.getId())) {  // check if elevator in error state
+                boolean fit = false;
+                if (e.getCurrentStatus().equals("Idle")) {      // elevator in idle state
                     fit = true;
+                } else {        // elevator is current moving
+                    if (this.parser.getDirection() == e.getDirection() && this.inPickUpRange(e.getDirection(), e.getCurrentLocation(), e.getLastAction(), userLocation)) {
+                        fit = true;
+                    }
                 }
-            }
-            if (fit) {      // this elevator is available to pick the user
-                if (distance > Math.abs(e.getCurrentLocation() - userLocation)) {
-                    bestElevatorToMoveId = e.getId();
-                    distance = e.getCurrentLocation() - userLocation;
+                if (fit) {      // this elevator is available to pick the user
+                    if (distance > Math.abs(e.getCurrentLocation() - userLocation)) {
+                        bestElevatorToMoveId = e.getId();
+                        distance = e.getCurrentLocation() - userLocation;
+                    }
                 }
             }
         }
@@ -85,7 +96,7 @@ public class Scheduler implements Runnable {
             byte[] ogMessage = this.parser.formatMessage();
             this.db.put(ogMessage);
         } else {                         // found a best fit elevator, start instruct elevator
-            this.startInstructElevator(bestElevatorToMoveId, userLocation, userDest);
+            this.startInstructElevator(bestElevatorToMoveId, userLocation, userDest, state);
         }
     }
 
@@ -95,15 +106,17 @@ public class Scheduler implements Runnable {
      * @param elevatorToMove id of elevator to move
      * @param userLocation   the location of user
      * @param userDest       user's destination
+     * @param state          elevator state
      */
-    private void startInstructElevator(int elevatorToMove, int userLocation, int userDest) {
-        ElevatorStatus currentElevatorStatus = this.elevatorStatusArrayList.get(elevatorToMove - 1);
+    private void startInstructElevator(int elevatorToMove, int userLocation, int userDest, String state) {
+        ElevatorStatus currentElevatorStatus = this.elevatorStatusArrayList.getElevator(elevatorToMove - 1);
         ArrayList<Integer> nextActionList = currentElevatorStatus.getNextActionList();
 
         if (currentElevatorStatus.getCurrentStatus().equals("Idle")) {
             // elevator is in idle state, instruct elevator to pickup user at the user location
-            System.out.println("Scheduler: elevator_" + elevatorToMove + " Idle" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to:" + userLocation);
-            this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
+            System.out.println("Scheduler: elevator_" + elevatorToMove + " Idle" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
+            this.sender.sendFloor("elevator", elevatorToMove, state, userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
+            errorHandling.startTimer(this.elevatorStatusArrayList, elevatorToMove);   // restart timer
 
             currentElevatorStatus.setCurrentAction(userLocation);       // update the local currentAction to user's location
         } else {                                                        //elevator is running
@@ -111,8 +124,9 @@ public class Scheduler implements Runnable {
                 // user's location is prime than the current action, instruct elevator to pickup user at the user location
                 int oldCurrentAction = currentElevatorStatus.getCurrentAction();
 
-                System.out.println("Scheduler: elevator_" + elevatorToMove + " Moving" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to:" + userLocation);
-                this.sender.sendFloor("elevator", elevatorToMove, "Move", userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
+                System.out.println("Scheduler: elevator_" + elevatorToMove + " Moving" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
+                this.sender.sendFloor("elevator", elevatorToMove, state, userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
+                errorHandling.restartTimer(this.elevatorStatusArrayList, elevatorToMove);  // restart timer
 
                 currentElevatorStatus.setCurrentAction(userLocation);       // update the local currentAction to user's location
 
@@ -137,9 +151,9 @@ public class Scheduler implements Runnable {
         }
 
         // Update Local Elevator Status
-        currentElevatorStatus.setCurrentStatus("Move");
+        currentElevatorStatus.setCurrentStatus(state);
         currentElevatorStatus.setNextActionList(nextActionList);
-        this.elevatorStatusArrayList.set(elevatorToMove - 1, currentElevatorStatus);
+        this.elevatorStatusArrayList.setElevator(elevatorToMove - 1, currentElevatorStatus);
     }
 
     /**
@@ -155,31 +169,50 @@ public class Scheduler implements Runnable {
      */
     private void updateElevatorStatus() {
         int elevatorID = this.parser.getIdentifier();    //Elevator start from 1 in Elevator class
-        ElevatorStatus currentElevatorStatus = elevatorStatusArrayList.get(elevatorID - 1);
+        ElevatorStatus currentElevatorStatus = elevatorStatusArrayList.getElevator(elevatorID - 1);
 
-        if (currentElevatorStatus.getCurrentAction() == this.parser.getFloor() && this.parser.getState().equals("OpenDoor")) { // Elevator Stop at the target floor
-            if (!currentElevatorStatus.actionListEmpty()) {         // action list not empty, the elevator still have next action to do
-                int nextFloor = currentElevatorStatus.popNextStop();
-
-                System.out.println("Scheduler: elevator_" + elevatorID + " arrived" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to:" + nextFloor);
-                sender.sendFloor("elevator", elevatorID, "Move", nextFloor, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
-
-                currentElevatorStatus.setCurrentAction(nextFloor);    // Update elevator's current action
+        if (!this.elevatorStatusArrayList.ifElevatorError(elevatorID)) {
+            if (this.parser.getState().equals("Idle")) {      // Idle state, stop timer
+                this.errorHandling.cancelTimer(elevatorID);
+            } else if (this.parser.getState().equals("Error")) {
+                System.out.println("Scheduler: elevator_" + elevatorID + " errored" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Reason: " + this.parser.getError());
+                this.errorHandling.cancelTimer(elevatorID);
+                this.elevatorStatusArrayList.addErrorElevator(elevatorID);      // set local elevator status to error
+            } else {  // receive elevator message, restart timer
+                this.errorHandling.restartTimer(this.elevatorStatusArrayList, elevatorID);
             }
-        }
 
-        // Update Local Elevator Status
-        currentElevatorStatus.setCurrentStatus(this.parser.getState());
-        currentElevatorStatus.setDirection(this.parser.getDirection());
-        currentElevatorStatus.setCurrentLocation(this.parser.getFloor());
-        elevatorStatusArrayList.set(elevatorID - 1, currentElevatorStatus);
+            if (currentElevatorStatus.getCurrentAction() == this.parser.getFloor() && this.parser.getState().equals("OpenDoor")) { // Elevator Stop at the target floor
+                if (!currentElevatorStatus.actionListEmpty()) {         // action list not empty, the elevator still have next action to do
+                    int nextFloor = currentElevatorStatus.popNextStop();
+
+                    System.out.println("Scheduler: elevator_" + elevatorID + " arrived" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + nextFloor);
+                    this.sender.sendFloor("elevator", elevatorID, "Move", nextFloor, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
+
+
+                    currentElevatorStatus.setCurrentAction(nextFloor);    // Update elevator's current action
+                }
+            }
+
+            // Update Local Elevator Status
+            currentElevatorStatus.setCurrentStatus(this.parser.getState());
+            currentElevatorStatus.setDirection(this.parser.getDirection());
+            currentElevatorStatus.setCurrentLocation(this.parser.getFloor());
+            elevatorStatusArrayList.setElevator(elevatorID - 1, currentElevatorStatus);
+        } else {
+            this.sender.sendError("elevator", elevatorID, "InErrorList", this.parser.getFloor(), this.getTime(), this.systemAddress, this.elevatorPort);   // Tell elevator, it is
+        }
     }
 
     /**
      * Sending update information to Floor subsystem
      */
     private void updateFloorSubsystem() {
-        sender.sendElevatorState(this.parser.getRole(), this.parser.getIdentifier(), this.parser.getState(), this.parser.getFloor(), this.parser.getDirection(), this.getTime(), this.systemAddress, this.floorPort);
+        if (this.parser.getState().equals("Error")) {
+            sender.sendError(this.parser.getRole(), this.parser.getIdentifier(), this.parser.getError(), this.parser.getFloor(), this.getTime(), this.systemAddress, this.floorPort);
+        } else {
+            sender.sendElevatorState(this.parser.getRole(), this.parser.getIdentifier(), this.parser.getState(), this.parser.getFloor(), this.parser.getDirection(), this.getTime(), this.systemAddress, this.floorPort);
+        }
     }
 
     /**
@@ -245,7 +278,6 @@ public class Scheduler implements Runnable {
         LocalDateTime localDateTime = LocalDateTime.now();
         return localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
-
 
     /**
      * @see java.lang.Runnable #run()

@@ -59,7 +59,7 @@ public class Sender {
 	}
 
 	public String sendError(String role, int identifier, String error, int floor, long time, InetAddress address, int port) {
-		String message = "role:" + role + ";id:" + identifier + ";error:" + error + ";floor:" + floor + ";time:" + time + ";";
+		String message = "role:" + role + ";id:" + identifier + ";error:" + error + ";floor:" + floor + ";time:" + time + ";state:Error;";
 		Boolean isSent = send(message, address, port);
 		String revMessage = receive();
 		return revMessage;

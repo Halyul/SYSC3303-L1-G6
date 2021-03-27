@@ -8,7 +8,7 @@ import project.utils.*;
 
 public class Elevator implements Runnable {
     private State state = State.Stationary;
-    
+    private boolean running = true;
     // floor height
     private static final double floorHeight = 3.57; 
     // The number of ground floors
@@ -26,9 +26,14 @@ public class Elevator implements Runnable {
     // speed
     private double speed = 0;
     // simulate stuck between floors
-    private boolean stuckBetweenFloors;
-    // simulate udp lose packet
-    private boolean toLosePacket;
+    private boolean stuckBetweenFloors = false;
+    // simulate arrival sensor has failed
+    private boolean arrivalSensorFailed = false;
+    private boolean isSimulated = false;
+    // simulate door stuck at open;
+    private boolean doorStuckAtOpen = false;
+    // simulate door stuck at close;
+    private boolean doorStuckAtClose = false;
     
     private InetAddress schedulerAddress;
     private int schedulerPort;
@@ -52,8 +57,6 @@ public class Elevator implements Runnable {
     private volatile DataStruct schedulerCommand = new DataStruct();
     // error message
     private String errorMessage;
-    // idle message state
-    private boolean isSentIdleMessage = false;
     
     /**
      * Elevator constructor
@@ -61,13 +64,10 @@ public class Elevator implements Runnable {
      * @param currentFloor initial floor
      * @param totalGroundFloors The number of ground floors
      * @param totalUndergroundFloors The number of underground floors
-     * @param doorStuckAtOpen if the door is stuck at open
-     * @param doorStuckAtClose if the door is stuck at close
-     * @param stuckBetweenFloors if the elevator is stuck between floors
      * @param schedulerAddress the address of the scheduler
      * @param port the port of the scheduler
      */
-    public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, boolean doorStuckAtOpen, boolean doorStuckAtClose, boolean stuckBetweenFloors, boolean toLosePacket, InetAddress schedulerAddress, int port) {
+    public Elevator(int identifier, int currentFloor, int totalGroundFloors, int totalUndergroundFloors, InetAddress schedulerAddress, int port) {
         // needs update here
         this.sender = new Sender();
         
@@ -75,9 +75,7 @@ public class Elevator implements Runnable {
         this.totalUndergroundFloors = totalUndergroundFloors;
         this.identifier = identifier;
         this.currentFloor = currentFloor;
-        this.door = new Door(doorStuckAtOpen, doorStuckAtClose);
-        this.stuckBetweenFloors = stuckBetweenFloors;
-        this.toLosePacket = toLosePacket;
+        this.door = new Door();
         for(int i = this.totalUndergroundFloors; i <= this.totalGroundFloors; i++) {
             if (i != 0) {
                 buttons.add(new ElevatorButton(i));
@@ -105,9 +103,8 @@ public class Elevator implements Runnable {
             this.state = move();
         } else if (this.state == State.Stop) {
             this.state = stop();
-        } else {
+        } else if (this.state == State.Error) {
             error();
-            System.exit(-1);
         }
     }
     
@@ -127,37 +124,49 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State stationary() {
-    	if (!this.isSentIdleMessage) {
-    		String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-    		this.isSentIdleMessage = true;
-            System.out.println("Elevator " + this.identifier + ": Current stationary");
-    	}
-        if (this.schedulerCommand.isWaiting()) {
-            String state = this.schedulerCommand.getState();
-            if (state.equals("Check")) {
-                String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-            } else if (state.equals("Move")) {
-            	// check if it is the same floor?
-                int destFloor = this.schedulerCommand.getFloor();
-                this.destFloor = destFloor;
-                if (destFloor == this.currentFloor) {
-                	// same floor, use State Stop because the elevator need to clean up the command
-                	this.isSentIdleMessage = false;
-                	return State.Stop;
-                }
-                int difference = this.destFloor - this.currentFloor;
-                if (difference > 0) {
-                    // going up
-                    this.direction = 1;
-                } else if (difference < 0) {
-                    this.direction = 0;
-                }
-                String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-                this.isSentIdleMessage = false;
-                return State.Move;
+        String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
+        System.out.println("Elevator " + this.identifier + ": Current stationary");
+        this.schedulerCommand.waitForCommand();
+        String state = this.schedulerCommand.getState();
+        if (state.equals("Check")) {
+            revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
+            this.schedulerCommand.finished();
+            return State.Stationary;
+        } else if (state.equals("Move")) {
+            // inject faults
+            String error = this.schedulerCommand.getError();
+            if (error.equals("stuckBetweenFloors")) {
+                this.stuckBetweenFloors = true;
+            } else if (error.equals("arrivalSensorFailed")) {
+                this.arrivalSensorFailed = true;
+            } else if (error.equals("doorStuckAtOpen")) {
+                this.doorStuckAtOpen = true;
+            } else if (error.equals("doorStuckAtClose")) {
+                this.doorStuckAtClose = true;
             }
+
+            int destFloor = this.schedulerCommand.getFloor();
+            this.destFloor = destFloor;
+            if (destFloor == this.currentFloor) {
+                // same floor, use State Stop because the elevator need to clean up the command
+                return State.Stop;
+            }
+            int difference = this.destFloor - this.currentFloor;
+            if (difference > 0) {
+                // going up
+                this.direction = 1;
+            } else if (difference < 0) {
+                this.direction = 0;
+            }
+            revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
+            return State.Move;
+        } else if (state.equals("Error")) {
+            this.errorMessage = "schedulerReportedError";
+            return State.OpenDoor;
+        } else {
+            this.errorMessage = "unknownStateError";
+            return State.Error;
         }
-        return State.Stationary;
     }
     
     /**
@@ -165,7 +174,7 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State openDoor() {
-        boolean isOpened = door.open();
+        boolean isOpened = door.open(this.doorStuckAtClose);
         if (!isOpened) {
             this.errorMessage = "doorStuckAtOpen";
             return State.Error;
@@ -174,6 +183,10 @@ public class Elevator implements Runnable {
         parser.parse(revMsg);
         String state = parser.getState();
         if (state.equals("Received")) {
+            if (this.schedulerCommand.getState().equals("Error")) {
+                this.errorMessage = "schedulerReportedError";
+                return State.Error;
+            }
             return State.CloseDoor;
         } else {
             return State.Error;
@@ -185,7 +198,7 @@ public class Elevator implements Runnable {
      * @return next state
      */
     private State closeDoor() {
-        boolean isClosed = door.close();
+        boolean isClosed = door.close(this.doorStuckAtOpen);
         if (!isClosed) {
             this.errorMessage = "doorStuckAtClose";
             return State.Error;
@@ -197,6 +210,10 @@ public class Elevator implements Runnable {
             if (!this.schedulerCommand.isWaiting()) {
                 return State.Stationary;
             } else {
+                if (this.schedulerCommand.getState().equals("Error")) {
+                    this.errorMessage = "schedulerReportedError";
+                    return State.OpenDoor;
+                }
                 this.destFloor = this.schedulerCommand.getFloor();
                 return State.Move;
             }
@@ -221,27 +238,53 @@ public class Elevator implements Runnable {
                 this.errorMessage = "stuckBetweenFloors";
                 return state.Error;
             }
-            this.speed = arrivalSensors.get(buttonIndex(this.currentFloor)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
+            this.speed = arrivalSensors.get(buttonIndex(this.currentFloor + 1)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
             this.currentFloor++;
-            floorLamps.get(buttonIndex(this.currentFloor - 1)).off();
-            floorLamps.get(buttonIndex(this.currentFloor)).on();
+            if (this.currentFloor == this.destFloor && this.arrivalSensorFailed) {
+                if (this.isSimulated) {
+                    floorLamps.get(buttonIndex(this.currentFloor - 2)).off();
+                    floorLamps.get(buttonIndex(this.currentFloor)).on();
+                }
+            } else {
+                floorLamps.get(buttonIndex(this.currentFloor - 1)).off();
+                floorLamps.get(buttonIndex(this.currentFloor)).on();
+            }
         } else if (difference < 0) {
             // going down
             directionLamp = this.downLamp;
             this.direction = 0;
             directionLamp.on();
             motor.down(this.speed);
-            this.speed = arrivalSensors.get(buttonIndex(this.currentFloor)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
+            this.speed = arrivalSensors.get(buttonIndex(this.currentFloor - 1)).check(motor.getSpeed(), motor.getMaxSpeed(), motor.getAccelerationDisplacement(), motor.getAccelerationTime(), this.destFloor);
             if (this.stuckBetweenFloors) {
                 this.errorMessage = "stuckBetweenFloors";
                 return state.Error;
             }
             this.currentFloor--;
-            floorLamps.get(buttonIndex(this.currentFloor + 1)).off();
-            floorLamps.get(buttonIndex(this.currentFloor)).on();
+            if (this.currentFloor == this.destFloor && this.arrivalSensorFailed) {
+                if (this.isSimulated) {
+                    floorLamps.get(buttonIndex(this.currentFloor + 2)).off();
+                    floorLamps.get(buttonIndex(this.currentFloor)).on();
+                }
+            } else {
+                floorLamps.get(buttonIndex(this.currentFloor + 1)).off();
+                floorLamps.get(buttonIndex(this.currentFloor)).on();
+            }
         }
         
         if (this.currentFloor == this.destFloor) {
+            if (this.arrivalSensorFailed && !this.isSimulated) {
+                // simulate the arrival sensor at destFloor has failed
+                // the elevator should go pass this floor, and reach next floor
+                if (difference > 0) {
+                    this.destFloor++;
+                } else if (difference < 0) {
+                    this.destFloor--;
+                }
+                this.speed = motor.getMaxSpeed();
+                this.isSimulated = true;
+                return State.Move;
+            }
             return State.Stop;
         }
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Move", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
@@ -286,20 +329,20 @@ public class Elevator implements Runnable {
      * The elevator will try to contact the Scheduler about the error and then shutdown for safety reasons
      */
     private void error() {
-        if(this.state == State.Move) {
-            motor.stop();
-        }
+        motor.stop();
         while(true) {
-            try {
-                Thread.sleep((long) (500));
-            } catch(InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            System.out.println(Thread.currentThread().getName() + ": " + this.errorMessage);
             String revMsg = sender.sendError(this.getClass().getSimpleName(), this.identifier, this.errorMessage, this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
             parser.parse(revMsg);
             String state = parser.getState();
             if (state.equals("Received")) {
+                this.running = false;
                 break;
+            }
+            try {
+                Thread.sleep((long) (500));
+            } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -356,7 +399,7 @@ public class Elevator implements Runnable {
      */
    @Override
     public void run() {
-        while(true) {
+        while(running) {
             execute();
         }
     }
@@ -366,32 +409,7 @@ public class Elevator implements Runnable {
 	   	int numberOfElevators = 4;
 	   	ArrayList<Elevator> elevators = new ArrayList<Elevator>();
 	   	ArrayList<Thread> elevatorThreads = new ArrayList<Thread>();
-        
-        // inject faults
-        boolean doorStuckAtOpen[] = {
-            false,
-            false,
-            false,
-            false
-        };
-        boolean doorStuckAtClose[] = {
-            false,
-            false,
-            false,
-            false
-        };
-        boolean stuckBetweenFloors[] = {
-            false,
-            false,
-            false,
-            false
-        };
-        boolean toLosePacket[] = {
-            false,
-            false,
-            false,
-            false
-        };
+
 	   	try {
 	   		schedulerAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -399,7 +417,7 @@ public class Elevator implements Runnable {
 			System.exit(1);
 		}
 	   	for (int i = 0; i < numberOfElevators; i++) {
-	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, doorStuckAtOpen[i], doorStuckAtClose[i], stuckBetweenFloors[i], toLosePacket[i], schedulerAddress, 12000);
+	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, schedulerAddress, 12000);
 	   		elevators.add(elevator);
 	   		Thread elevatorThread = new Thread(elevator, "Elevator " + (i + 1));
 	   		elevatorThreads.add(elevatorThread);
