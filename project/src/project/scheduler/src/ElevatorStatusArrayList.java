@@ -1,3 +1,9 @@
+/*
+    Author: Zijun Hu
+
+    This is the class to storage all the status of elevators; also include the elevators in error status.
+ */
+
 package project.scheduler.src;
 
 import java.util.ArrayList;
@@ -6,29 +12,63 @@ public class ElevatorStatusArrayList {
     private final ArrayList<ElevatorStatus> elevatorStatusArrayList = new ArrayList<>();
     private final ArrayList<Integer> errorElevatorArrayList = new ArrayList<>();
 
-    public ElevatorStatusArrayList(){}
+    public ElevatorStatusArrayList() {
+    }
 
-    public synchronized void addElevator(ElevatorStatus e){
+    /**
+     * Add elevator status to elevator status arraylist
+     *
+     * @param e elevatorStatus
+     */
+    public synchronized void addElevator(ElevatorStatus e) {
         this.elevatorStatusArrayList.add(e);
     }
 
-    public synchronized ArrayList<ElevatorStatus> getList(){
+    /**
+     * Return the ArrayList of elevator status
+     *
+     * @return ArrayList of ElevatorStatus
+     */
+    public synchronized ArrayList<ElevatorStatus> getList() {
         return this.elevatorStatusArrayList;
     }
 
-    public synchronized ElevatorStatus getElevator(int id){
+    /**
+     * Return the elevator status using input id
+     *
+     * @param id elevator id
+     * @return elevator status
+     */
+    public synchronized ElevatorStatus getElevator(int id) {
         return this.elevatorStatusArrayList.get(id);
     }
 
-    public synchronized void setElevator(int id, ElevatorStatus e){
-        this.elevatorStatusArrayList.set(id,e);
+    /**
+     * Set the elevator status using input id
+     *
+     * @param id elevator id
+     * @param e  elevator status
+     */
+    public synchronized void setElevator(int id, ElevatorStatus e) {
+        this.elevatorStatusArrayList.set(id, e);
     }
 
-    public synchronized void addErrorElevator(int id){
+    /**
+     * Add error elevator into error elevator arraylist
+     *
+     * @param id the id of error elevator
+     */
+    public synchronized void addErrorElevator(int id) {
         this.errorElevatorArrayList.add(id);
     }
 
-    public synchronized Boolean ifElevatorError(int id){
+    /**
+     * Check if elevator id inside error elevator arraylist
+     *
+     * @param id the id of elevator to be checked
+     * @return if elevator is in error status
+     */
+    public synchronized Boolean ifElevatorError(int id) {
         return this.errorElevatorArrayList.contains(id);
     }
 }

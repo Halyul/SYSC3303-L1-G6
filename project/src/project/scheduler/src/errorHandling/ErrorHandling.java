@@ -1,3 +1,9 @@
+/*
+    Author: Zijun Hu
+
+    This is the class for handling elevator errors using by the scheduler.
+ */
+
 package project.scheduler.src.errorHandling;
 
 import project.scheduler.src.ElevatorStatusArrayList;
@@ -8,17 +14,29 @@ import java.util.TimerTask;
 public class ErrorHandling {
     private final ArrayList<TaskTimer> timerArrayList = new ArrayList<>();
 
-    public ErrorHandling(){}
+    public ErrorHandling() {
+    }
 
-    public void startTimer(ElevatorStatusArrayList elevatorStatusArrayList, int id){
+    /**
+     * Start a timer for elevator
+     *
+     * @param elevatorStatusArrayList Elevator status arraylist
+     * @param id                      id of elevator
+     */
+    public void startTimer(ElevatorStatusArrayList elevatorStatusArrayList, int id) {
         TaskTimer taskTimer = new TaskTimer(id);
         TimerTask task = new ErrorHandlingTask(elevatorStatusArrayList, id);
-        taskTimer.schedule(task,5000);
+        taskTimer.schedule(task, 5000);
         timerArrayList.add(taskTimer);
     }
 
-    public void cancelTimer(int id){
-        if(timerExist(id)) {
+    /**
+     * Stop the timer for elevator with id
+     *
+     * @param id elevator id
+     */
+    public void cancelTimer(int id) {
+        if (timerExist(id)) {
             TaskTimer timeToRemove = null;
             for (TaskTimer t : timerArrayList) {
                 timeToRemove = t;
@@ -34,14 +52,26 @@ public class ErrorHandling {
         }
     }
 
-    public void restartTimer(ElevatorStatusArrayList elevatorStatusArrayList, int id){
+    /**
+     * Restart the timer for the elevator with id
+     *
+     * @param elevatorStatusArrayList Elevator status arraylist
+     * @param id                      elevator id
+     */
+    public void restartTimer(ElevatorStatusArrayList elevatorStatusArrayList, int id) {
         this.cancelTimer(id);
-        this.startTimer(elevatorStatusArrayList,id);
+        this.startTimer(elevatorStatusArrayList, id);
     }
 
-    private boolean timerExist(int id){
-        for (TaskTimer t : timerArrayList){
-            if(t.getId() == id){
+    /**
+     * Check if timer already exist
+     *
+     * @param id elevator id
+     * @return if timer exist
+     */
+    public boolean timerExist(int id) {
+        for (TaskTimer t : timerArrayList) {
+            if (t.getId() == id) {
                 return true;
             }
         }

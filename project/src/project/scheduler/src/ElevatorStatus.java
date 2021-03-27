@@ -1,7 +1,7 @@
 /*
-  Author: Zijun Hu
+    Author: Zijun Hu
 
-  This is a class to record elevator stats locally for Scheduler
+    This is a class to record elevator stats locally for Scheduler
  */
 
 package project.scheduler.src;

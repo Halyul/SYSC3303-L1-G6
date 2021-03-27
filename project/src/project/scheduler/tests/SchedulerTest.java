@@ -2,6 +2,7 @@
     Author: Zijun Hu
     This is the JUnit test case for Scheduler, mainly test the state changing this the Scheduler.
  */
+
 package project.scheduler.tests;
 
 import org.junit.jupiter.api.Assertions;

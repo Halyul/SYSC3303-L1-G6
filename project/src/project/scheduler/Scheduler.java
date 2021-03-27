@@ -1,7 +1,7 @@
 /*
-  Author: Zijun Hu
+    Author: Zijun Hu
 
-  This is the class for scheduler. The scheduler handle the message from the Elevator/floor subsystem.
+    This is the class for scheduler. The scheduler handle the message from the Elevator/floor subsystem.
  */
 
 package project.scheduler;
@@ -26,6 +26,15 @@ public class Scheduler implements Runnable {
     private final int elevatorPort;
     private final int floorPort;
 
+    /**
+     * initialization
+     *
+     * @param db                  message data base
+     * @param totalElevatorNumber total elevator number
+     * @param totalFloorNumber    total floor number
+     * @param address             default IP address
+     * @param defaultPort         default port number
+     */
     public Scheduler(Database db, int totalElevatorNumber, int totalFloorNumber, InetAddress address, int defaultPort) {
         this.db = db;
         this.systemAddress = address;
@@ -204,10 +213,6 @@ public class Scheduler implements Runnable {
         } else {
             sender.sendElevatorState(this.parser.getRole(), this.parser.getIdentifier(), this.parser.getState(), this.parser.getFloor(), this.parser.getDirection(), this.getTime(), this.systemAddress, this.floorPort);
         }
-    }
-
-    private void resetTimer() {
-
     }
 
     /**
