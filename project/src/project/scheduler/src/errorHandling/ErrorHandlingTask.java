@@ -9,6 +9,8 @@ package project.scheduler.src.errorHandling;
 import project.scheduler.src.ElevatorStatusArrayList;
 import project.utils.Sender;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.TimerTask;
 
 public class ErrorHandlingTask extends TimerTask {
@@ -27,10 +29,19 @@ public class ErrorHandlingTask extends TimerTask {
     }
 
     /**
+     * Get current time in epoch seconds
+     * @return as described above
+     */
+    private long getTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        return localDateTime.toEpochSecond(ZoneOffset.UTC);
+    }
+
+    /**
      * Task to do when error occurs
      */
     public void run() {
-        System.out.println("Scheduler: elevator_" + id + " errored" + " - Reason: Timer Expired");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": elevator_" + id + " errored" + " - Reason: Timer Expired");
         this.elevatorStatusArrayList.addErrorElevator(id);
     }
 }

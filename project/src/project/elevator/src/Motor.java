@@ -1,5 +1,8 @@
 package project.elevator.src;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 public class Motor {
     // The maximum speed of the elevator in m/s, 1.3 * 1.1
     private static final double maxSpeed = 1.43; 
@@ -33,7 +36,7 @@ public class Motor {
         } else {
             movementTime = (displacement - this.accelerationDisplacement * 2) / this.maxSpeed + this.accelerationTime * 2;
         }
-        System.out.println(Thread.currentThread().getName() + ": " + displacement + "m; " + movementTime + " seconds.");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": " + displacement + "m; " + movementTime + " seconds.");
     }
     
     /**
@@ -67,6 +70,15 @@ public class Motor {
      */
     private void start() {
         
+    }
+
+    /**
+     * Get current time in epoch seconds
+     * @return as described above
+     */
+    private long getTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        return localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
     
     /**

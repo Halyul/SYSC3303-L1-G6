@@ -214,9 +214,19 @@ public class Floor implements Runnable{
 			}
 			inReader.close();
 		}	catch (FileNotFoundException e) {
-			System.out.println(Thread.currentThread().getName() + ": File not found");
+			System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": File not found");
 		}
 	}
+
+	/**
+     * Get current time in epoch seconds
+     * @return as described above
+     */
+    private long getTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        return localDateTime.toEpochSecond(ZoneOffset.UTC);
+    }
+
 	/**
 	 * @see java.lang.Runnable#run()
 	 */

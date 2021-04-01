@@ -116,7 +116,7 @@ public class Elevator implements Runnable {
     public void put(byte[] inputMessage) {
         this.parser.parse(inputMessage);
         this.schedulerCommand.setState(this.parser.getState(), this.parser.getFloor());
-        System.out.println("Elevator " + this.identifier + ": receive a task: " + new String(inputMessage));
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": receive a task: " + new String(inputMessage));
     }
     
     /**
@@ -125,7 +125,7 @@ public class Elevator implements Runnable {
      */
     private State stationary() {
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-        System.out.println("Elevator " + this.identifier + ": Current stationary");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Current stationary");
         this.schedulerCommand.waitForCommand();
         String state = this.schedulerCommand.getState();
         if (state.equals("Check")) {
@@ -312,7 +312,7 @@ public class Elevator implements Runnable {
         }
         this.speed = 0;
         this.direction = -1;
-        System.out.println(Thread.currentThread().getName() + ": stop at " + this.destFloor + " floor.");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": stop at " + this.destFloor + " floor.");
         this.schedulerCommand.finished();
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Stop", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
         parser.parse(revMsg);
@@ -331,7 +331,7 @@ public class Elevator implements Runnable {
     private void error() {
         motor.stop();
         while(true) {
-            System.out.println(Thread.currentThread().getName() + ": " + this.errorMessage);
+            System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": " + this.errorMessage);
             String revMsg = sender.sendError(this.getClass().getSimpleName(), this.identifier, this.errorMessage, this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
             parser.parse(revMsg);
             String state = parser.getState();

@@ -114,7 +114,7 @@ public class Scheduler implements Runnable {
 
         if (currentElevatorStatus.getCurrentStatus().equals("Idle")) {
             // elevator is in idle state, instruct elevator to pickup user at the user location
-            System.out.println("Scheduler: elevator_" + elevatorToMove + " Idle" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
+            System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": elevator_" + elevatorToMove + " Idle" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
             this.sender.sendFloor("elevator", elevatorToMove, state, userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
             errorHandling.startTimer(this.elevatorStatusArrayList, elevatorToMove);   // restart timer
 
@@ -124,7 +124,7 @@ public class Scheduler implements Runnable {
                 // user's location is prime than the current action, instruct elevator to pickup user at the user location
                 int oldCurrentAction = currentElevatorStatus.getCurrentAction();
 
-                System.out.println("Scheduler: elevator_" + elevatorToMove + " Moving" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": elevator_" + elevatorToMove + " Moving" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
                 this.sender.sendFloor("elevator", elevatorToMove, state, userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
                 errorHandling.restartTimer(this.elevatorStatusArrayList, elevatorToMove);  // restart timer
 
@@ -175,7 +175,7 @@ public class Scheduler implements Runnable {
             if (this.parser.getState().equals("Idle")) {      // Idle state, stop timer
                 this.errorHandling.cancelTimer(elevatorID);
             } else if (this.parser.getState().equals("Error")) {
-                System.out.println("Scheduler: elevator_" + elevatorID + " errored" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Reason: " + this.parser.getError());
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": elevator_" + elevatorID + " errored" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Reason: " + this.parser.getError());
                 this.errorHandling.cancelTimer(elevatorID);
                 this.elevatorStatusArrayList.addErrorElevator(elevatorID);      // set local elevator status to error
             } else {  // receive elevator message, restart timer
@@ -186,7 +186,7 @@ public class Scheduler implements Runnable {
                 if (!currentElevatorStatus.actionListEmpty()) {         // action list not empty, the elevator still have next action to do
                     int nextFloor = currentElevatorStatus.popNextStop();
 
-                    System.out.println("Scheduler: elevator_" + elevatorID + " arrived" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + nextFloor);
+                    System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": elevator_" + elevatorID + " arrived" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + nextFloor);
                     this.sender.sendFloor("elevator", elevatorID, "Move", nextFloor, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
 
 
@@ -284,7 +284,7 @@ public class Scheduler implements Runnable {
      */
     @Override
     public void run() {
-        System.out.println("Scheduler running.");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": running.");
         while (true) {
             try {
                 this.execute();

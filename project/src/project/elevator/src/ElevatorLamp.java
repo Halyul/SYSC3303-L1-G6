@@ -1,5 +1,8 @@
 package project.elevator.src;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 public class ElevatorLamp {
     // floor number
     private int number;
@@ -15,7 +18,7 @@ public class ElevatorLamp {
      */
     public void on() {
         this.isOn = true;
-        System.out.println(Thread.currentThread().getName() + ": The light of " + this.number + " floor is on.");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": The light of " + this.number + " floor is on.");
     }
     
     /**
@@ -23,7 +26,16 @@ public class ElevatorLamp {
      */
     public void off() {
         this.isOn = false;
-        System.out.println(Thread.currentThread().getName() + ": The light of " + this.number + " floor is off.");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": The light of " + this.number + " floor is off.");
+    }
+
+    /**
+     * Get current time in epoch seconds
+     * @return as described above
+     */
+    private long getTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        return localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
     
     /**
