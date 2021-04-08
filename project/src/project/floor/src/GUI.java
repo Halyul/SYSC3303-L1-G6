@@ -38,7 +38,7 @@ public class GUI implements Runnable {
         		JLabel elevatorNum = new JLabel("Elevator " + i);
         		JLabel currFloor = new JLabel("1");
         		JLabel currState = new JLabel("Stationary");
-        		JLabel currDirection = new JLabel("N/A");
+        		JLabel currDirection = new JLabel("No direction");
         		JLabel errorType = new JLabel("N/A");
         		this.ElevatorInfo.add(currFloor);
         		this.ElevatorInfo.add(currState);
@@ -78,6 +78,9 @@ public class GUI implements Runnable {
 		case "doorStuckAtClose":
 			readableError = "Elevator doors stuck closed";
 			break;
+		case "schedulerReportedError":
+			readableError = "Scheduler reported an error";
+			break;
 		}
 		return readableError;
 	}
@@ -92,10 +95,24 @@ public class GUI implements Runnable {
 			messages.remove(0);
 			if(parser.getRole().equals("Elevator")) {
 				int elevatorNum = parser.getIdentifier() - 1;
+				int elevatorDir = parser.getDirection();
+				String readableDir = "";
+				
 				//Set current floor number
 				this.ElevatorInfo.get(elevatorNum*4).setText(""+parser.getFloor());
 				this.ElevatorInfo.get((elevatorNum*4)+1).setText(""+parser.getState());
-				this.ElevatorInfo.get((elevatorNum*4)+2).setText(""+parser.getDirection());
+				switch(elevatorDir) {
+				case 0:
+					readableDir = "Down";
+					break;
+				case 1:
+					readableDir = "Up";
+					break;
+				default:
+					readableDir = "No direction";
+					break;
+				}
+				this.ElevatorInfo.get((elevatorNum*4)+2).setText(readableDir);
 				
 				if(parser.getState().equals("Error")) {
 					//Set error
