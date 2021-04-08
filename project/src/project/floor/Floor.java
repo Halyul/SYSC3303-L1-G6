@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 import project.utils.*;
-import project.floor.src.Receiver;
 import project.floor.src.*;
 
 public class Floor implements Runnable{
@@ -56,8 +55,6 @@ public class Floor implements Runnable{
 		this.schedulerPort = port;
 	}
 	
-
-
 	/**
 	 * Get receives messages from the scheduler
 	 */
@@ -105,7 +102,7 @@ public class Floor implements Runnable{
 
 
 	/**
-	 * For iteration 1, Scheduler sends the message to here
+	 * Receives message from the scheduler
 	 *
 	 * @param inputMessage the message
 	 */
@@ -226,7 +223,7 @@ public class Floor implements Runnable{
         LocalDateTime localDateTime = LocalDateTime.now();
         return localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
-
+    
 	/**
 	 * @see java.lang.Runnable#run()
 	 */
@@ -239,6 +236,7 @@ public class Floor implements Runnable{
 	}
 	
 	public static void main(String args[]) {
+		int numberOfElevators = 4;
 		InetAddress schedulerAddress = null;
 	   	try {
 	   		schedulerAddress = InetAddress.getLocalHost();
@@ -249,8 +247,13 @@ public class Floor implements Runnable{
 	   	Floor floor = new Floor(7, schedulerAddress, 12000);
 	   	Thread floorThread = new Thread(floor, "Floor");
 	   	floorThread.start();
+	   	
 	   	Receiver r = new Receiver(floor, 12000);
 	   	Thread receiverThread = new Thread(r, "Receiver");
 	   	receiverThread.start();
+	   	
+	   	GUI gui = new GUI(numberOfElevators);
+	   	Thread guiThread = new Thread(gui, "GUI");
+	   	guiThread.start();
 	}
 }
