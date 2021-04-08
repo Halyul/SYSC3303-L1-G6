@@ -22,12 +22,12 @@ public class GUI implements Runnable {
 	 */
 	public GUI(int numberOfElevators) {
     	JFrame frame = new JFrame("Concierge System");
-    	frame.setLayout(new GridLayout(numberOfElevators, 3));
+    	frame.setLayout(new GridLayout(numberOfElevators+1, 3));
     	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     	frame.setSize(350,500);
     	frame.setVisible(true);
-    	for(int i = 1; i <= numberOfElevators; i++) {
-    		if(i == 1) {
+    	for(int i = 0; i <= numberOfElevators; i++) {
+    		if(i == 0) {
         		frame.add(new JLabel("Elevator Number"));
         		frame.add(new JLabel("Current Floor"));
         		frame.add(new JLabel("Error"));
@@ -63,8 +63,10 @@ public class GUI implements Runnable {
 			if(parser.getRole().equals("Elevator")) {
 				int elevatorNum = parser.getIdentifier() - 1;
 				//Set current floor number
-				this.ElevatorInfo.get(elevatorNum*2).setText(""+parser.getFloor());
-				if(!parser.getError().equals("")) {
+				if(parser.getState().equals("Move") || parser.getState().equals("Stop")) {
+					this.ElevatorInfo.get(elevatorNum*2).setText(""+parser.getFloor());
+				}
+				if(parser.getState().equals("Error")) {
 					//Set error
 					this.ElevatorInfo.get((elevatorNum*2)+1).setText(""+parser.getError());
 				}
@@ -78,4 +80,5 @@ public class GUI implements Runnable {
 			updateGUI();
 		}
 	}
+	
 }
