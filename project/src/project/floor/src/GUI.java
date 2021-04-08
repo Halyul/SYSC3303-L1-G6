@@ -11,7 +11,7 @@ import javax.swing.JLabel;
 
 public class GUI implements Runnable {
 	//Array containing JLabels to be changed via info, each elevators respective info
-	//is stored at index (elevatorNumber-1)*2
+	//is stored at index (elevatorNumber-1)*4 +1, 2, 3
 	private volatile ArrayList<JLabel> ElevatorInfo = new ArrayList<JLabel>();
 	private volatile static ArrayList<byte[]> messages = new ArrayList<byte[]>();
 	
@@ -22,24 +22,32 @@ public class GUI implements Runnable {
 	 */
 	public GUI(int numberOfElevators) {
     	JFrame frame = new JFrame("Concierge System");
-    	frame.setLayout(new GridLayout(numberOfElevators+1, 3));
+    	frame.setLayout(new GridLayout(numberOfElevators+1, 5));
     	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    	frame.setSize(350,500);
+    	frame.setSize(800,500);
     	frame.setVisible(true);
     	for(int i = 0; i <= numberOfElevators; i++) {
     		if(i == 0) {
         		frame.add(new JLabel("Elevator Number"));
         		frame.add(new JLabel("Current Floor"));
+        		frame.add(new JLabel("State"));
+        		frame.add(new JLabel("Direction"));
         		frame.add(new JLabel("Error"));
     		}
     		else {
         		JLabel elevatorNum = new JLabel("Elevator " + i);
         		JLabel currFloor = new JLabel("1");
+        		JLabel currState = new JLabel("Stationary");
+        		JLabel currDirection = new JLabel("N/A");
         		JLabel errorType = new JLabel("N/A");
         		this.ElevatorInfo.add(currFloor);
+        		this.ElevatorInfo.add(currState);
+        		this.ElevatorInfo.add(currDirection);
         		this.ElevatorInfo.add(errorType);
         		frame.add(elevatorNum);
         		frame.add(currFloor);
+        		frame.add(currState);
+        		frame.add(currDirection);
         		frame.add(errorType);
     		}
     	}
@@ -50,6 +58,28 @@ public class GUI implements Runnable {
 	 */
 	public static void put(byte[] inputMessage) {
 		messages.add(inputMessage);
+	}
+	/*
+	 * Resolves error message into a human readable format
+	 * @param error error message
+	 */
+	private String resolveError(String error) {
+		String readableError = "";
+		switch(error){
+		case "stuckBetweenFloors":
+			readableError = "Elevator is stuck between two floors";
+			break;
+		case "arrivalSensorFailed":
+			readableError = "Arrival sensor failed";
+			break;
+		case "doorStuckAtOpen":
+			readableError = "Elevator doors stuck open";
+			break;
+		case "doorStuckAtClose":
+			readableError = "Elevator doors stuck closed";
+			break;
+		}
+		return readableError;
 	}
 	
 	/*
@@ -63,12 +93,13 @@ public class GUI implements Runnable {
 			if(parser.getRole().equals("Elevator")) {
 				int elevatorNum = parser.getIdentifier() - 1;
 				//Set current floor number
-				if(parser.getState().equals("Move") || parser.getState().equals("Stop")) {
-					this.ElevatorInfo.get(elevatorNum*2).setText(""+parser.getFloor());
-				}
+				this.ElevatorInfo.get(elevatorNum*4).setText(""+parser.getFloor());
+				this.ElevatorInfo.get((elevatorNum*4)+1).setText(""+parser.getState());
+				this.ElevatorInfo.get((elevatorNum*4)+2).setText(""+parser.getDirection());
+				
 				if(parser.getState().equals("Error")) {
 					//Set error
-					this.ElevatorInfo.get((elevatorNum*2)+1).setText(""+parser.getError());
+					this.ElevatorInfo.get((elevatorNum*4)+3).setText(resolveError(parser.getError()));
 				}
 			}
 		}
