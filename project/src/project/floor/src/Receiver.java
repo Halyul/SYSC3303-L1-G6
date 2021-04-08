@@ -51,6 +51,8 @@ public class Receiver implements Runnable {
 		System.out.println(new String(message));
 		if (!this.isDebug) {
 			floor.put(message);
+			GUI.put(message);
+			
 		} else {
 			this.debugMessage = message;
 		}
