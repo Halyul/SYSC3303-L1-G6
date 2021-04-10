@@ -1,3 +1,8 @@
+/*
+    Author: Zijun Hu
+
+    This is the class to store the message from floor to scheduler.
+ */
 package project.utils;
 
 import java.util.ArrayList;
@@ -31,5 +36,13 @@ public class Database{
         byte[] message = this.messageList.get(0);
         messageList.remove(0);
         return message;
+    }
+
+    /**
+     * check if message list is empty
+     * @return true if message list is empty
+     */
+    public synchronized Boolean isEmpty(){
+        return messageList.size() == 0;
     }
 }

@@ -4,26 +4,54 @@ import java.util.ArrayList;
 
 public class Calculator {
 
-    public Calculator() {}
+    public Calculator() {
+    }
 
     /**
      * Calculate the average of a list of double number
+     *
      * @param lst a list of double number
      * @return the average of the lst
      */
     public double mean(ArrayList<Double> lst) {
         double sum = sum(lst);
-        return sum/lst.size();
+        return sum / lst.size();
     }
 
     /**
      * Calculate the sum of a list of double number
+     *
      * @param lst a list of double number
      * @return the sum of the lst
      */
     public double sum(ArrayList<Double> lst) {
         double sum = 0;
-        for (double number: lst) {
+        for (double number : lst) {
+            sum += number;
+        }
+        return sum;
+    }
+
+    /**
+     * Calculate the average of a list of Long number
+     *
+     * @param lst a list of double number
+     * @return the average of the lst
+     */
+    public Long meanOfLong(ArrayList<Long> lst) {
+        Long sum = sumOfLong(lst);
+        return sum / lst.size();
+    }
+
+    /**
+     * Calculate the sum of a list of Long number
+     *
+     * @param lst a list of double number
+     * @return the sum of the lst
+     */
+    public Long sumOfLong(ArrayList<Long> lst) {
+        Long sum = 0L;
+        for (Long number : lst) {
             sum += number;
         }
         return sum;
@@ -31,6 +59,7 @@ public class Calculator {
 
     /**
      * Calculate the (sample) standard deviation of a list of double number
+     *
      * @param lst a list of double number
      * @return the standard deviation of the list
      */
@@ -43,12 +72,13 @@ public class Calculator {
             sqrtDistance.add(dataPoint * dataPoint);
         }
         double sum = sum(sqrtDistance);
-        return Math.sqrt(sum/(n - 1));
+        return Math.sqrt(sum / (n - 1));
     }
 
     /**
      * Calculate the confidence interval of a list of double number for a certain confidence
-     * @param lst a list of double number
+     *
+     * @param lst        a list of double number
      * @param confidence confidence level
      * @return the confidence interval of the list
      */
