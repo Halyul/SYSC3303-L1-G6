@@ -368,7 +368,7 @@ public class Scheduler implements Runnable {
             System.exit(1);
         }
 
-        Scheduler scheduler = new Scheduler(db, 4, 7, schedulerAddress, schedulerPort);
+        Scheduler scheduler = new Scheduler(db, 4, 22, schedulerAddress, schedulerPort);
         Thread schedulerThread = new Thread(scheduler, "Scheduler ");
         schedulerThread.start();
 

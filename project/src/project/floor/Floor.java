@@ -244,7 +244,7 @@ public class Floor implements Runnable{
 				e.printStackTrace();
 				System.exit(1);
 			}
-	   	Floor floor = new Floor(7, schedulerAddress, 12000);
+	   	Floor floor = new Floor(22, schedulerAddress, 12000);
 	   	Thread floorThread = new Thread(floor, "Floor");
 	   	floorThread.start();
 	   	

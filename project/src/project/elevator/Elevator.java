@@ -176,7 +176,7 @@ public class Elevator implements Runnable {
     private State openDoor() {
         boolean isOpened = door.open(this.doorStuckAtClose);
         if (!isOpened) {
-            this.errorMessage = "doorStuckAtOpen";
+            this.errorMessage = "doorStuckAtClose";
             return State.Error;
         }
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "OpenDoor", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
@@ -200,7 +200,7 @@ public class Elevator implements Runnable {
     private State closeDoor() {
         boolean isClosed = door.close(this.doorStuckAtOpen);
         if (!isClosed) {
-            this.errorMessage = "doorStuckAtClose";
+            this.errorMessage = "doorStuckAtOpen";
             return State.Error;
         }
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "CloseDoor", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort); // get next step
@@ -417,7 +417,7 @@ public class Elevator implements Runnable {
 			System.exit(1);
 		}
 	   	for (int i = 0; i < numberOfElevators; i++) {
-	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, schedulerAddress, 12000);
+	   		Elevator elevator = new Elevator((i + 1), 1, 22, 0, schedulerAddress, 12000);
 	   		elevators.add(elevator);
 	   		Thread elevatorThread = new Thread(elevator, "Elevator " + (i + 1));
 	   		elevatorThreads.add(elevatorThread);

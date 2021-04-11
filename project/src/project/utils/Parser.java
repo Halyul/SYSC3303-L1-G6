@@ -11,7 +11,7 @@ public class Parser {
     // if the value is 0, it is meant a status check
     private String state;
     // up -> 1, down -> 0, undefined -> -1
-    private int direction;
+    private int direction = -1;
     // Sender.sendFloor
     private int floor;
     // time of the message
