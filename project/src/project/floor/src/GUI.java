@@ -37,7 +37,7 @@ public class GUI implements Runnable {
     		else {
         		JLabel elevatorNum = new JLabel("Elevator " + i);
         		JLabel currFloor = new JLabel("1");
-        		JLabel currState = new JLabel("Stationary");
+        		JLabel currState = new JLabel("Idle");
         		JLabel currDirection = new JLabel("No direction");
         		JLabel errorType = new JLabel("N/A");
         		this.ElevatorInfo.add(currFloor);

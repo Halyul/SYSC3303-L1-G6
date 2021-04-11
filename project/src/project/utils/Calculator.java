@@ -8,48 +8,23 @@ public class Calculator {
     }
 
     /**
-     * Calculate the average of a list of double number
-     *
-     * @param lst a list of double number
-     * @return the average of the lst
-     */
-    public double mean(ArrayList<Double> lst) {
-        double sum = sum(lst);
-        return sum / lst.size();
-    }
-
-    /**
-     * Calculate the sum of a list of double number
-     *
-     * @param lst a list of double number
-     * @return the sum of the lst
-     */
-    public double sum(ArrayList<Double> lst) {
-        double sum = 0;
-        for (double number : lst) {
-            sum += number;
-        }
-        return sum;
-    }
-
-    /**
      * Calculate the average of a list of Long number
      *
-     * @param lst a list of double number
+     * @param lst a list of Long number
      * @return the average of the lst
      */
-    public Long meanOfLong(ArrayList<Long> lst) {
-        Long sum = sumOfLong(lst);
+    public Long mean(ArrayList<Long> lst) {
+        Long sum = sum(lst);
         return sum / lst.size();
     }
 
     /**
      * Calculate the sum of a list of Long number
      *
-     * @param lst a list of double number
+     * @param lst a list of Long number
      * @return the sum of the lst
      */
-    public Long sumOfLong(ArrayList<Long> lst) {
+    public Long sum(ArrayList<Long> lst) {
         Long sum = 0L;
         for (Long number : lst) {
             sum += number;
@@ -58,31 +33,31 @@ public class Calculator {
     }
 
     /**
-     * Calculate the (sample) standard deviation of a list of double number
+     * Calculate the standard deviation of a list of Long number
      *
-     * @param lst a list of double number
+     * @param lst a list of Long number
      * @return the standard deviation of the list
      */
-    public double stdDev(ArrayList<Double> lst) {
-        double mean = mean(lst);
-        ArrayList<Double> sqrtDistance = new ArrayList<Double>();
+    public double stdDev(ArrayList<Long> lst) {
+        Long mean = mean(lst);
+        ArrayList<Long> sqrtDistance = new ArrayList<Long>();
         int n = lst.size();
         for (int i = 0; i < n; i++) {
-            double dataPoint = Math.abs(lst.get(i) - mean);
+            Long dataPoint = Math.abs(lst.get(i) - mean);
             sqrtDistance.add(dataPoint * dataPoint);
         }
-        double sum = sum(sqrtDistance);
-        return Math.sqrt(sum / (n - 1));
+        Long sum = sum(sqrtDistance);
+        return Math.sqrt(sum / n);
     }
 
     /**
-     * Calculate the confidence interval of a list of double number for a certain confidence
+     * Calculate the confidence interval of a list of Long number for a certain confidence
      *
-     * @param lst        a list of double number
+     * @param lst        a list of Long number
      * @param confidence confidence level
      * @return the confidence interval of the list
      */
-    public double confidenceInterval(ArrayList<Double> lst, double confidence) {
+    public double confidenceInterval(ArrayList<Long> lst, double confidence) {
         double z = -1;
         if (confidence == 80) {
             z = 1.282;

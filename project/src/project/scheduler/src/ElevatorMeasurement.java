@@ -57,16 +57,20 @@ public class ElevatorMeasurement {
      */
     public void printOutAverage(){
         Calculator c = new Calculator();
-        Long moveMean = c.meanOfLong(this.moveTime);
-        Long stopMean = c.meanOfLong(this.stopTime);
-        Long openDoorMean = c.meanOfLong(this.openDoorTime);
-        Long closeDoorMean = c.meanOfLong(this.closeDoorTime);
+        Long moveMean = c.mean(this.moveTime);
+        double moveCI = c.confidenceInterval(this.moveTime, 99.9);
+        Long stopMean = c.mean(this.stopTime);
+        double stopCI = c.confidenceInterval(this.stopTime, 99.9);
+        Long openDoorMean = c.mean(this.openDoorTime);
+        double openDoorCI = c.confidenceInterval(this.openDoorTime, 99.9);
+        Long closeDoorMean = c.mean(this.closeDoorTime);
+        double closeDoorCI = c.confidenceInterval(this.closeDoorTime, 99.9);
 
         System.out.println("\nFor elevator " + this.elevatorId + ": ");
-        System.out.println("The mean of time elapsed on moving between two floors is: " + moveMean + " ms.");
-        System.out.println("The mean of time elapsed on stopping the elevator is: " + stopMean + " ms.");
-        System.out.println("The mean of time elapsed on open the elevator door is: " + openDoorMean + " ms.");
-        System.out.println("The mean of time elapsed on close the elevator door is: " + closeDoorMean + " ms.");
+        System.out.println("The mean of time elapsed on moving between two floors is: " + moveMean + " ± " + moveCI + " ms with 99.9% confidence interval.");
+        System.out.println("The mean of time elapsed on stopping the elevator is: " + stopMean + " ± " + stopCI + " ms with 99.9% confidence interval.");
+        System.out.println("The mean of time elapsed on open the elevator door is: " + openDoorMean + " ± " + openDoorCI + " ms with 99.9% confidence interval.");
+        System.out.println("The mean of time elapsed on close the elevator door is: " + closeDoorMean + " ± " + closeDoorCI + " ms with 99.9% confidence interval.");
     }
 
     /**
