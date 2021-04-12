@@ -14,6 +14,7 @@ public class ElevatorStatus {
     private int currentAction;
     private int currentLocation;
     private int currentDirection;        // -1 none; 0 Down; 1 Up
+    private int userDirection;        // -1 none; 0 Down; 1 Up
     private ArrayList<Integer> nextActionList = new ArrayList<>();
 
     public ElevatorStatus(int id) {
@@ -66,7 +67,7 @@ public class ElevatorStatus {
 
 
     /**
-     * Get elevator's current direction
+     * Set elevator's current direction
      */
     public void setDirection(int currentDirection) {
         this.currentDirection = currentDirection;
@@ -77,6 +78,20 @@ public class ElevatorStatus {
      */
     public int getDirection() {
         return this.currentDirection;
+    }
+
+    /**
+     * Set the user's direction
+     */
+    public void setUserDirection(int userDirection) {
+        this.userDirection = userDirection;
+    }
+
+    /**
+     * Get the user's direction (Ex. Up or down)
+     */
+    public int getUserDirection() {
+        return this.userDirection;
     }
 
     /**

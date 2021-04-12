@@ -57,20 +57,39 @@ public class ElevatorMeasurement {
      */
     public void printOutAverage(){
         Calculator c = new Calculator();
-        Long moveMean = c.mean(this.moveTime);
-        double moveCI = c.confidenceInterval(this.moveTime, 99.9);
-        Long stopMean = c.mean(this.stopTime);
-        double stopCI = c.confidenceInterval(this.stopTime, 99.9);
-        Long openDoorMean = c.mean(this.openDoorTime);
-        double openDoorCI = c.confidenceInterval(this.openDoorTime, 99.9);
-        Long closeDoorMean = c.mean(this.closeDoorTime);
-        double closeDoorCI = c.confidenceInterval(this.closeDoorTime, 99.9);
-
         System.out.println("\nFor elevator " + this.elevatorId + ": ");
-        System.out.println("The mean of time elapsed on moving between two floors is: " + moveMean + " ± " + moveCI + " ms with 99.9% confidence interval.");
-        System.out.println("The mean of time elapsed on stopping the elevator is: " + stopMean + " ± " + stopCI + " ms with 99.9% confidence interval.");
-        System.out.println("The mean of time elapsed on open the elevator door is: " + openDoorMean + " ± " + openDoorCI + " ms with 99.9% confidence interval.");
-        System.out.println("The mean of time elapsed on close the elevator door is: " + closeDoorMean + " ± " + closeDoorCI + " ms with 99.9% confidence interval.");
+
+        if(this.moveTime.size() != 0) {
+            Long moveMean = c.mean(this.moveTime);
+            double moveCI = c.confidenceInterval(this.moveTime, 99.9);
+            System.out.println("The mean of the time elapsed on moving between two floors is: " + moveMean + " ± " + moveCI + " ms with 99.9% confidence interval.");
+        }else{
+            System.out.println("No data found on the time elapsed on moving between two floors.");
+        }
+
+        if(this.stopTime.size() != 0) {
+            Long stopMean = c.mean(this.stopTime);
+            double stopCI = c.confidenceInterval(this.stopTime, 99.9);
+            System.out.println("The mean of the time elapsed on stopping the elevator is: " + stopMean + " ± " + stopCI + " ms with 99.9% confidence interval.");
+        }else{
+            System.out.println("No data found on the time elapsed on stopping the elevator.");
+        }
+
+        if(this.openDoorTime.size() != 0) {
+            Long openDoorMean = c.mean(this.openDoorTime);
+            double openDoorCI = c.confidenceInterval(this.openDoorTime, 99.9);
+            System.out.println("The mean of the time elapsed on open the elevator door is: " + openDoorMean + " ± " + openDoorCI + " ms with 99.9% confidence interval.");
+        }else{
+            System.out.println("No data found on the time elapsed on open the elevator door.");
+        }
+
+        if(this.closeDoorTime.size() != 0) {
+            Long closeDoorMean = c.mean(this.closeDoorTime);
+            double closeDoorCI = c.confidenceInterval(this.closeDoorTime, 99.9);
+            System.out.println("The mean of the time elapsed on close the elevator door is: " + closeDoorMean + " ± " + closeDoorCI + " ms with 99.9% confidence interval.");
+        }else{
+            System.out.println("No data found on the time elapsed on close the elevator door.");
+        }
     }
 
     /**

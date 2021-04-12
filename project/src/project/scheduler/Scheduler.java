@@ -85,7 +85,7 @@ public class Scheduler implements Runnable {
                 if (e.getCurrentStatus().equals("Idle")) {      // elevator in idle state
                     fit = true;
                 } else {        // elevator is current moving
-                    if (this.parser.getDirection() == e.getDirection() && this.inPickUpRange(e.getDirection(), e.getCurrentLocation(), e.getLastAction(), userLocation)) {
+                    if (this.parser.getDirection() == e.getUserDirection() && this.parser.getDirection() == e.getDirection() && this.inPickUpRange(e.getDirection(), e.getCurrentLocation(), e.getLastAction(), userLocation)) {
                         fit = true;
                     }
                 }
@@ -159,6 +159,7 @@ public class Scheduler implements Runnable {
         // Update Local Elevator Status
         currentElevatorStatus.setCurrentStatus(state);
         currentElevatorStatus.setNextActionList(nextActionList);
+        currentElevatorStatus.setUserDirection(this.parser.getDirection());
         this.elevatorStatusArrayList.setElevator(elevatorToMove - 1, currentElevatorStatus);
     }
 

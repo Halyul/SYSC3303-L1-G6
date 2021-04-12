@@ -63,6 +63,18 @@ class ElevatorStatusTest {
     }
 
     @Test
+    void setUserDirectionTest() {
+        e.setUserDirection(0);
+        Assertions.assertNotEquals(1, e.getUserDirection());
+    }
+
+    @Test
+    void getUserDirectionTest() {
+        e.setUserDirection(1);
+        Assertions.assertEquals(1, e.getUserDirection());
+    }
+
+    @Test
     void getIdTest() {
         Assertions.assertEquals(1, e.getId());
     }
