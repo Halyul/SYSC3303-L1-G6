@@ -38,7 +38,7 @@ public class GUI implements Runnable {
     		else {
         		JLabel elevatorNum = new JLabel("Elevator " + i);
         		JLabel currFloor = new JLabel("1");
-        		JLabel currState = new JLabel("Stationary");
+        		JLabel currState = new JLabel("Idle");
         		JLabel currDirection = new JLabel("No direction");
         		JLabel errorType = new JLabel("N/A");
         		this.ElevatorInfo.add(currFloor);
@@ -60,6 +60,21 @@ public class GUI implements Runnable {
 	 */
 	public static void put(byte[] inputMessage) {
 		messages.add(inputMessage);
+	}
+	
+	public String currLabel(int elevatorNum, int wantedText) {
+		switch(wantedText) {
+			case 0:	//Floor
+				return this.ElevatorInfo.get(elevatorNum*4).getText();
+			case 1:	//State
+				return this.ElevatorInfo.get((elevatorNum*4)+1).getText();
+			case 2:	//Direction
+				return this.ElevatorInfo.get((elevatorNum*4)+2).getText();
+			case 3:	//Error
+				return this.ElevatorInfo.get((elevatorNum*4)+3).getText();
+			default:
+				return "Wrong parameter";
+		}
 	}
 	/*
 	 * Resolves error message into a human readable format
@@ -91,7 +106,7 @@ public class GUI implements Runnable {
 	 * Used to update gui dynamically. If there is information relevant
 	 * to the GUI in the message list, updates JLabels to reflect this info
 	 */
-	private void updateGUI() {
+	public synchronized void updateGUI() {
 		if(messages.size() != 0) {
 			this.parser.parse(messages.get(0));
 			messages.remove(0);
