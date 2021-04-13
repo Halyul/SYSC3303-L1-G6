@@ -14,6 +14,7 @@ public class GUI implements Runnable {
 	//is stored at index (elevatorNumber-1)*4 +1, 2, 3
 	private volatile ArrayList<JLabel> ElevatorInfo = new ArrayList<JLabel>();
 	private volatile static ArrayList<byte[]> messages = new ArrayList<byte[]>();
+	private volatile ArrayList<Integer> prevDir = new ArrayList<Integer>();
 	
 	private Parser parser = new Parser();
 	/*
@@ -37,12 +38,13 @@ public class GUI implements Runnable {
     		else {
         		JLabel elevatorNum = new JLabel("Elevator " + i);
         		JLabel currFloor = new JLabel("1");
-        		JLabel currState = new JLabel("Idle");
+        		JLabel currState = new JLabel("Stationary");
         		JLabel currDirection = new JLabel("No direction");
         		JLabel errorType = new JLabel("N/A");
         		this.ElevatorInfo.add(currFloor);
         		this.ElevatorInfo.add(currState);
         		this.ElevatorInfo.add(currDirection);
+        		this.prevDir.add(-1);
         		this.ElevatorInfo.add(errorType);
         		frame.add(elevatorNum);
         		frame.add(currFloor);
@@ -101,18 +103,22 @@ public class GUI implements Runnable {
 				//Set current floor number
 				this.ElevatorInfo.get(elevatorNum*4).setText(""+parser.getFloor());
 				this.ElevatorInfo.get((elevatorNum*4)+1).setText(""+parser.getState());
-				switch(elevatorDir) {
-				case 0:
-					readableDir = "Down";
-					break;
-				case 1:
-					readableDir = "Up";
-					break;
-				default:
-					readableDir = "No direction";
-					break;
+
+				if(this.prevDir.get(elevatorNum) != elevatorDir) {	//If direction of the elevator has changed
+					switch(elevatorDir) {
+					case 0:
+						readableDir = "Down";
+						break;
+					case 1:
+						readableDir = "Up";
+						break;
+					default:
+						readableDir = "No direction";
+						break;
+					}
+					this.prevDir.set(elevatorNum, elevatorDir);
+					this.ElevatorInfo.get((elevatorNum*4)+2).setText(readableDir);	//Update direction on GUI
 				}
-				this.ElevatorInfo.get((elevatorNum*4)+2).setText(readableDir);
 				
 				if(parser.getState().equals("Error")) {
 					//Set error
@@ -128,5 +134,4 @@ public class GUI implements Runnable {
 			updateGUI();
 		}
 	}
-	
 }
