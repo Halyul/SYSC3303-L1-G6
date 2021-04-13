@@ -5,7 +5,6 @@ import java.util.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -132,7 +131,7 @@ public class Floor implements Runnable{
 		double minute = Double.parseDouble(time.substring(3,5));
 		double seconds = Double.parseDouble(time.substring(6,8));
 		
-		return (hour * 60) + minute + (seconds / 100); //Returns the time in a format where one hour = 60 seconds, one minute = 1 second and 1 second = 0.01 second
+		return (hour * 60 * 60) + (minute * 60) + seconds; //Returns the time in seconds
 	}
 	
 	/**
@@ -179,14 +178,12 @@ public class Floor implements Runnable{
 					}
 				}
 				int destFloor = Integer.parseInt(individualIns[3]);	//Stores destination floor
-				SimpleDateFormat time = new SimpleDateFormat("HH:MM:SS.S");	//Used for epoch time conversion
 				try {
-					Date currTime = time.parse(individualIns[0]);
 					double inputTime = floorTime(individualIns[0]);
 					if(baseTime == 0) {
 						baseTime = inputTime;
 					}
-					Thread.sleep((long) (inputTime - baseTime));
+					
 					String state = "Move";
 					if(individualIns.length == 5) {	//If there is a 5th argument
 						switch(individualIns[4]) {	//determine which fault to inject
@@ -204,7 +201,9 @@ public class Floor implements Runnable{
 								break;
 						}
 					}
-					send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, state);
+					Thread.sleep((long) (inputTime - baseTime) * 1000);
+					send(getTime(), currentFloor, dir, destFloor, state);
+					baseTime = inputTime;
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
