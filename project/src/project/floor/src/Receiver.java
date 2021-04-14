@@ -5,12 +5,16 @@ import java.io.*;
 import java.net.*;
 
 public class Receiver implements Runnable {
-	private Floor floor;
+    private Floor floor;
     private DatagramSocket receiveSocket;
     private DatagramPacket receivePacket;
     private boolean isDebug;
     private byte[] debugMessage;
-    
+    /**
+    *	Receiver constructor
+    *	@param floor floor object
+    *	@param port port of the floor
+    */
     public Receiver(Floor floor, int port) {
     	this.floor = floor;
 		try {
@@ -25,8 +29,8 @@ public class Receiver implements Runnable {
 		this.isDebug = isDebug;
 	}
     
-    /**
-	 * Receive a message
+    	/**
+	 * execute() Receive a message
 	 */
 	private void execute() {
 		byte data[] = new byte[5000];
@@ -41,7 +45,7 @@ public class Receiver implements Runnable {
 	}
 	
 	/**
-	 * Parse a message
+	 * parse() Parses the received message
 	 */
 	private void parse() {
 		int messageLength = receivePacket.getLength();
