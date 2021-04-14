@@ -6,11 +6,17 @@ import project.floor.src.GUI;
 
 public class GUITest {
 	private GUI g;
+	/**
+	*	setUp() used to initialize gui object before each test
+	*/
 	@BeforeEach
 	public void setUp() throws Exception{
 		g = new GUI(1);
 	}
 	
+	/**
+	*	updateNewFloor() sends a message and checks if the GUI updates with the new message information
+	*/
 	@SuppressWarnings("static-access")
 	@Test
     @DisplayName("Updates the JLabels in the GUI by changing floor and direction")   
@@ -31,7 +37,9 @@ public class GUITest {
 		Assertions.assertEquals(g.currLabel(0, 1), "Moving");
 		Assertions.assertEquals(g.currLabel(0, 2), "Down");
 	}
-	
+	/**
+	*	updateError() sends a message with an error and checks if the GUI updates with the new message information
+	*/
 	@SuppressWarnings("static-access")
 	@Test
     @DisplayName("Updates the JLabels in the GUI by sending error and changing states")   
