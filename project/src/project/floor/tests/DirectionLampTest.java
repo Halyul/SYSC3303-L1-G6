@@ -6,7 +6,9 @@ import project.floor.src.DirectionLamp;
 
 class DirectionLampTest {
     private DirectionLamp e;
-        
+    /**
+    *   setUp() sets up the object for error test
+    */
     @BeforeEach
     public void setUp() throws Exception {
         this.e = new DirectionLamp(1, true);
