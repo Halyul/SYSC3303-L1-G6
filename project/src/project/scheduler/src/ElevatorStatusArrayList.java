@@ -71,4 +71,18 @@ public class ElevatorStatusArrayList {
     public synchronized Boolean ifElevatorError(int id) {
         return this.errorElevatorArrayList.contains(id);
     }
+
+    /**
+     * check if all elevator is in idle or error state
+     *
+     * @return true if all elevator is in idle or error state
+     */
+    public synchronized Boolean allElevatorIdle() {
+        for (ElevatorStatus e : elevatorStatusArrayList) {
+            if (!e.getCurrentStatus().equals("Idle") && !e.getCurrentStatus().equals("Error")) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

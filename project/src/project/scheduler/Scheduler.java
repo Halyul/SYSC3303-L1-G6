@@ -15,9 +15,13 @@ import project.scheduler.src.*;
 import project.scheduler.src.errorHandling.ErrorHandling;
 
 public class Scheduler implements Runnable {
+    private Boolean firstMessage = true;
+    private Boolean firstTaskAssigned = false;
+    long startedTime = 0L;
     private final Database db;
     private final Sender sender = new Sender();
     private final ElevatorStatusArrayList elevatorStatusArrayList = new ElevatorStatusArrayList();
+    private final ArrayList<ElevatorMeasurement> elevatorMeasurementArrayList = new ArrayList<>();
     private final ErrorHandling errorHandling = new ErrorHandling();
     private final int totalFloorNumber;
     private SchedulerState schedulerState;
@@ -43,6 +47,7 @@ public class Scheduler implements Runnable {
         this.schedulerState = SchedulerState.WaitMessage;
         for (int i = 1; i <= totalElevatorNumber; i++) {
             this.elevatorStatusArrayList.addElevator(new ElevatorStatus(i));
+            this.elevatorMeasurementArrayList.add(new ElevatorMeasurement(i));
         }
         this.totalFloorNumber = totalFloorNumber;
     }
@@ -67,6 +72,7 @@ public class Scheduler implements Runnable {
      * Handle the message from floor subsystem
      */
     private void parseFloorMessage() {
+        this.firstTaskAssigned = true;
         int userLocation = this.parser.getIdentifier();
         int userDest = this.parser.getFloor();
         String state = this.parser.getState();
@@ -79,7 +85,7 @@ public class Scheduler implements Runnable {
                 if (e.getCurrentStatus().equals("Idle")) {      // elevator in idle state
                     fit = true;
                 } else {        // elevator is current moving
-                    if (this.parser.getDirection() == e.getDirection() && this.inPickUpRange(e.getDirection(), e.getCurrentLocation(), e.getLastAction(), userLocation)) {
+                    if (this.parser.getDirection() == e.getUserDirection() && this.parser.getDirection() == e.getDirection() && this.inPickUpRange(e.getDirection(), e.getCurrentLocation(), e.getLastAction(), userLocation)) {
                         fit = true;
                     }
                 }
@@ -114,7 +120,7 @@ public class Scheduler implements Runnable {
 
         if (currentElevatorStatus.getCurrentStatus().equals("Idle")) {
             // elevator is in idle state, instruct elevator to pickup user at the user location
-            System.out.println("Scheduler: elevator_" + elevatorToMove + " Idle" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
+            System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": elevator_" + elevatorToMove + " Idle" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
             this.sender.sendFloor("elevator", elevatorToMove, state, userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
             errorHandling.startTimer(this.elevatorStatusArrayList, elevatorToMove);   // restart timer
 
@@ -124,7 +130,7 @@ public class Scheduler implements Runnable {
                 // user's location is prime than the current action, instruct elevator to pickup user at the user location
                 int oldCurrentAction = currentElevatorStatus.getCurrentAction();
 
-                System.out.println("Scheduler: elevator_" + elevatorToMove + " Moving" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": elevator_" + elevatorToMove + " Moving" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + userLocation);
                 this.sender.sendFloor("elevator", elevatorToMove, state, userLocation, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
                 errorHandling.restartTimer(this.elevatorStatusArrayList, elevatorToMove);  // restart timer
 
@@ -153,6 +159,7 @@ public class Scheduler implements Runnable {
         // Update Local Elevator Status
         currentElevatorStatus.setCurrentStatus(state);
         currentElevatorStatus.setNextActionList(nextActionList);
+        currentElevatorStatus.setUserDirection(this.parser.getDirection());
         this.elevatorStatusArrayList.setElevator(elevatorToMove - 1, currentElevatorStatus);
     }
 
@@ -160,8 +167,28 @@ public class Scheduler implements Runnable {
      * Handle the message from elevator subsystem
      */
     private void parseElevatorMessage() {
+        this.measureTime();
         this.updateElevatorStatus();
         this.updateFloorSubsystem();
+    }
+
+    /**
+     * Measure the time elapsed for each action
+     */
+    private void measureTime() {
+        long messageParserTime = System.nanoTime();
+        int elevatorID = this.parser.getIdentifier();
+        ElevatorMeasurement elevatorMeasurement = this.elevatorMeasurementArrayList.get(elevatorID - 1);
+        Long lastTimeStamp = elevatorMeasurement.getLastTimeStamp();
+
+        if (lastTimeStamp != null) {
+            long timeElapsed = (messageParserTime - lastTimeStamp) / 1000000;   // calculate time elapsed in millisecond
+            if(timeElapsed != 0) {
+                elevatorMeasurement.addTime(this.parser.getState(), timeElapsed);
+            }
+        }
+
+        elevatorMeasurement.setLastTimeStamp(messageParserTime);    // renew the last time stamp
     }
 
     /**
@@ -175,7 +202,7 @@ public class Scheduler implements Runnable {
             if (this.parser.getState().equals("Idle")) {      // Idle state, stop timer
                 this.errorHandling.cancelTimer(elevatorID);
             } else if (this.parser.getState().equals("Error")) {
-                System.out.println("Scheduler: elevator_" + elevatorID + " errored" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Reason: " + this.parser.getError());
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": elevator_" + elevatorID + " errored" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Reason: " + this.parser.getError());
                 this.errorHandling.cancelTimer(elevatorID);
                 this.elevatorStatusArrayList.addErrorElevator(elevatorID);      // set local elevator status to error
             } else {  // receive elevator message, restart timer
@@ -186,9 +213,8 @@ public class Scheduler implements Runnable {
                 if (!currentElevatorStatus.actionListEmpty()) {         // action list not empty, the elevator still have next action to do
                     int nextFloor = currentElevatorStatus.popNextStop();
 
-                    System.out.println("Scheduler: elevator_" + elevatorID + " arrived" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + nextFloor);
+                    System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": elevator_" + elevatorID + " arrived" + " - Current location: " + currentElevatorStatus.getCurrentLocation() + " - Instruction: " + "Move to: " + nextFloor);
                     this.sender.sendFloor("elevator", elevatorID, "Move", nextFloor, this.getTime(), this.systemAddress, this.elevatorPort);   // sends instruction
-
 
                     currentElevatorStatus.setCurrentAction(nextFloor);    // Update elevator's current action
                 }
@@ -199,6 +225,10 @@ public class Scheduler implements Runnable {
             currentElevatorStatus.setDirection(this.parser.getDirection());
             currentElevatorStatus.setCurrentLocation(this.parser.getFloor());
             elevatorStatusArrayList.setElevator(elevatorID - 1, currentElevatorStatus);
+
+            if(this.elevatorStatusArrayList.allElevatorIdle() && this.db.isEmpty() && this.firstTaskAssigned){  // check if all the tasks finished
+                this.outputTimeCosts();
+            }
         } else {
             this.sender.sendError("elevator", elevatorID, "InErrorList", this.parser.getFloor(), this.getTime(), this.systemAddress, this.elevatorPort);   // Tell elevator, it is
         }
@@ -216,9 +246,27 @@ public class Scheduler implements Runnable {
     }
 
     /**
+     * Print out the time cost and mean for each action in console output
+     */
+    private void outputTimeCosts(){
+        long endedTime = System.nanoTime();
+        long timeElapsed = (endedTime - this.startedTime) / 1000000;
+
+        System.out.println("\nThe total time used to finish all tasks is: " + timeElapsed + " ms.");
+
+        for (ElevatorMeasurement elevatorMeasurement : elevatorMeasurementArrayList){   // print out average for each elevator
+            elevatorMeasurement.printOutAverage();
+        }
+    }
+
+    /**
      * Get next message from database, then parse the message using parser, return the parser
      */
     private void getNextMessage() {
+        if(this.firstMessage){      // do the timestamp if this message is the first message
+            this.startedTime = System.nanoTime();
+            this.firstMessage = false;
+        }
         byte[] inputMessage = this.db.get();
         this.parser = new Parser(inputMessage);
         if (this.parser.getRole().equals("Floor")) {
@@ -284,7 +332,7 @@ public class Scheduler implements Runnable {
      */
     @Override
     public void run() {
-        System.out.println("Scheduler running.");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": running.");
         while (true) {
             try {
                 this.execute();
@@ -321,7 +369,7 @@ public class Scheduler implements Runnable {
             System.exit(1);
         }
 
-        Scheduler scheduler = new Scheduler(db, 4, 7, schedulerAddress, schedulerPort);
+        Scheduler scheduler = new Scheduler(db, 4, 22, schedulerAddress, schedulerPort);
         Thread schedulerThread = new Thread(scheduler, "Scheduler ");
         schedulerThread.start();
 

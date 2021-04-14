@@ -1,5 +1,8 @@
 package project.elevator.src;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 public class Door {
     // The time the doors take to open and close in seconds
     private static final double doorTime = 9.3; 
@@ -15,20 +18,20 @@ public class Door {
     public boolean open(boolean stuckAtClose) {
         if (!stuckAtClose) {
             if (!isOpened) {
-                System.out.println(Thread.currentThread().getName() + ": Door is opening.");
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Door is opening.");
                 try {
                     Thread.sleep((long) (1000 * this.doorTime / 2));
                 } catch(InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
                 this.isOpened = true;
-                System.out.println(Thread.currentThread().getName() + ": Door opened.");
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Door opened.");
             } else {
-                System.out.println(Thread.currentThread().getName() + ": Door already opened.");
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Door already opened.");
             }
             return true;
         } else {
-            System.out.println(Thread.currentThread().getName() + ": Door is unable to open.");
+            System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Door is unable to open.");
             return false;
         }
     }
@@ -41,22 +44,31 @@ public class Door {
     public boolean close(boolean stuckAtOpen) {
         if (!stuckAtOpen) {
             if (isOpened) {
-                System.out.println(Thread.currentThread().getName() + ": Door is closing.");
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Door is closing.");
                 try {
                     Thread.sleep((long) (1000 * this.doorTime / 2));
                 } catch(InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
                 this.isOpened = false;
-                System.out.println(Thread.currentThread().getName() + ": Door closed.");
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Door closed.");
             } else {
-                System.out.println(Thread.currentThread().getName() + ": Door already closed.");
+                System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Door already closed.");
             }
             return true;
         } else {
-            System.out.println(Thread.currentThread().getName() + ": Door is unable to close.");
+            System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Door is unable to close.");
             return false;
         }
+    }
+
+    /**
+     * Get current time in epoch seconds
+     * @return as described above
+     */
+    private long getTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        return localDateTime.toEpochSecond(ZoneOffset.UTC);
     }
     
     /**

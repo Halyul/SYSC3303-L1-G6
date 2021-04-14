@@ -116,7 +116,7 @@ public class Elevator implements Runnable {
     public void put(byte[] inputMessage) {
         this.parser.parse(inputMessage);
         this.schedulerCommand.setState(this.parser.getState(), this.parser.getFloor());
-        System.out.println("Elevator " + this.identifier + ": receive a task: " + new String(inputMessage));
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": receive a task: " + new String(inputMessage));
     }
     
     /**
@@ -125,7 +125,7 @@ public class Elevator implements Runnable {
      */
     private State stationary() {
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Idle", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
-        System.out.println("Elevator " + this.identifier + ": Current stationary");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": Current stationary");
         this.schedulerCommand.waitForCommand();
         String state = this.schedulerCommand.getState();
         if (state.equals("Check")) {
@@ -176,7 +176,7 @@ public class Elevator implements Runnable {
     private State openDoor() {
         boolean isOpened = door.open(this.doorStuckAtClose);
         if (!isOpened) {
-            this.errorMessage = "doorStuckAtOpen";
+            this.errorMessage = "doorStuckAtClose";
             return State.Error;
         }
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "OpenDoor", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
@@ -200,7 +200,7 @@ public class Elevator implements Runnable {
     private State closeDoor() {
         boolean isClosed = door.close(this.doorStuckAtOpen);
         if (!isClosed) {
-            this.errorMessage = "doorStuckAtClose";
+            this.errorMessage = "doorStuckAtOpen";
             return State.Error;
         }
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "CloseDoor", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort); // get next step
@@ -312,7 +312,7 @@ public class Elevator implements Runnable {
         }
         this.speed = 0;
         this.direction = -1;
-        System.out.println(Thread.currentThread().getName() + ": stop at " + this.destFloor + " floor.");
+        System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": stop at " + this.destFloor + " floor.");
         this.schedulerCommand.finished();
         String revMsg = sender.sendElevatorState(this.getClass().getSimpleName(), this.identifier, "Stop", this.currentFloor, this.direction, getTime(), schedulerAddress, this.schedulerPort);
         parser.parse(revMsg);
@@ -331,7 +331,7 @@ public class Elevator implements Runnable {
     private void error() {
         motor.stop();
         while(true) {
-            System.out.println(Thread.currentThread().getName() + ": " + this.errorMessage);
+            System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": " + this.errorMessage);
             String revMsg = sender.sendError(this.getClass().getSimpleName(), this.identifier, this.errorMessage, this.currentFloor, getTime(), schedulerAddress, this.schedulerPort);
             parser.parse(revMsg);
             String state = parser.getState();
@@ -417,7 +417,7 @@ public class Elevator implements Runnable {
 			System.exit(1);
 		}
 	   	for (int i = 0; i < numberOfElevators; i++) {
-	   		Elevator elevator = new Elevator((i + 1), 1, 7, 0, schedulerAddress, 12000);
+	   		Elevator elevator = new Elevator((i + 1), 1, 22, 0, schedulerAddress, 12000);
 	   		elevators.add(elevator);
 	   		Thread elevatorThread = new Thread(elevator, "Elevator " + (i + 1));
 	   		elevatorThreads.add(elevatorThread);

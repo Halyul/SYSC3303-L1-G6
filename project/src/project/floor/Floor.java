@@ -5,27 +5,30 @@ import java.util.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 import project.utils.*;
-import project.floor.src.Receiver;
 import project.floor.src.*;
 
 public class Floor implements Runnable{
 	//Number of the top floor
 	private int topFloor;
+	//Time of the first message
 	private double baseTime = 0;
-
+	//sender object for floor subsystem
 	private Sender sender = new Sender();
+	//parser object for floor subsystem
 	private Parser parser = new Parser();
-
+	//Address to the scheduler
 	private InetAddress schedulerAddress;
+	//Port of the scheduler
 	private int schedulerPort;
-	
+	//Stores messages received from the scheduler
 	private volatile ArrayList<byte[]> messages = new ArrayList<byte[]>();
+	//Stores floor buttons objects for each floor
 	private ArrayList<FloorButton> floorButtons = new ArrayList<FloorButton>();
+	//Stores direction lamps object for each floor
 	private ArrayList<DirectionLamp> dirLamps = new ArrayList<DirectionLamp>();
 	
 	/**
@@ -56,25 +59,23 @@ public class Floor implements Runnable{
 		this.schedulerPort = port;
 	}
 	
-
-
 	/**
-	 * Get receives messages from the scheduler
+	 * get(): receives messages from the scheduler
 	 */
 	private void get() {
-		//If there is a message
+		//If there is a message in the queue
 		if (this.messages.size() != 0) {
 			this.parser.parse(messages.get(0)); // Parse message
-			messages.remove(0);
+			messages.remove(0);	//Remove the message from queue
+			int currFloor = parser.getFloor();	//
 			//if elevator reaches destination floor
-			int currFloor = parser.getFloor();
 			if (parser.getRole().equals("Elevator") && parser.getState().equals("Stop")) {
 				
 				if(currFloor == 1)// If bottom floor
 					floorButtons.get(0).off();
 				else if(currFloor == this.topFloor)	//If top floor
 					floorButtons.get((currFloor*2)-3).off();
-				else {
+				else {	//Any other floor
 					floorButtons.get((currFloor*2)-3).off();
 					floorButtons.get((currFloor*2)-2).off();
 				}
@@ -82,7 +83,6 @@ public class Floor implements Runnable{
 			//Following ifs set the direction of the DirectionLamp
 			if(parser.getRole().equals("Elevator")) {
 				for(int i = 0; i < (currFloor*2)-2; i++) {
-
 					if(parser.getDirection() == 1) {
 						if(dirLamps.get(i).getDirection())
 							dirLamps.get(i).on();
@@ -105,12 +105,12 @@ public class Floor implements Runnable{
 
 
 	/**
-	 * For iteration 1, Scheduler sends the message to here
+	 * Receives message from the scheduler
 	 *
 	 * @param inputMessage the message
 	 */
 	public void put(byte[] inputMessage) {
-		this.messages.add(inputMessage);
+		this.messages.add(inputMessage);	//Add message to queue
 	}
 	/**
 	 * Send the message to the Scheduler
@@ -121,7 +121,7 @@ public class Floor implements Runnable{
 	 * @param state the status of the floor
 	 */
 	private void send(long time, int currentFloor, int direction, int CarButton, String state) {
-		String revMsg = sender.sendInput(currentFloor, state, direction, CarButton, time, schedulerAddress, this.schedulerPort);
+		String revMsg = sender.sendInput(currentFloor, state, direction, CarButton, time, schedulerAddress, this.schedulerPort);//Send message to scheduler
 	}
 	
 	
@@ -135,7 +135,7 @@ public class Floor implements Runnable{
 		double minute = Double.parseDouble(time.substring(3,5));
 		double seconds = Double.parseDouble(time.substring(6,8));
 		
-		return (hour * 60) + minute + (seconds / 100); //Returns the time in a format where one hour = 60 seconds, one minute = 1 second and 1 second = 0.01 second
+		return (hour * 60) + minute + (seconds/100); //Returns the time in seconds
 	}
 	
 	/**
@@ -182,14 +182,12 @@ public class Floor implements Runnable{
 					}
 				}
 				int destFloor = Integer.parseInt(individualIns[3]);	//Stores destination floor
-				SimpleDateFormat time = new SimpleDateFormat("HH:MM:SS.S");	//Used for epoch time conversion
 				try {
-					Date currTime = time.parse(individualIns[0]);
 					double inputTime = floorTime(individualIns[0]);
-					if(baseTime == 0) {
-						baseTime = inputTime;
+					if(baseTime == 0) {	//If this is the first request
+						baseTime = inputTime;	//baseTime is first requests time
 					}
-					Thread.sleep((long) (inputTime - baseTime));
+					
 					String state = "Move";
 					if(individualIns.length == 5) {	//If there is a 5th argument
 						switch(individualIns[4]) {	//determine which fault to inject
@@ -207,16 +205,28 @@ public class Floor implements Runnable{
 								break;
 						}
 					}
-					send(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC), currentFloor, dir, destFloor, state);
+					Thread.sleep((long) (inputTime - baseTime));
+					send(getTime(), currentFloor, dir, destFloor, state);
+					baseTime = inputTime;
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 			inReader.close();
 		}	catch (FileNotFoundException e) {
-			System.out.println(Thread.currentThread().getName() + ": File not found");
+			System.out.println(getTime() + " - " + Thread.currentThread().getName() + ": File not found");
 		}
 	}
+
+	/**
+     * Get current time in epoch seconds
+     * @return as described above
+     */
+    private long getTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        return localDateTime.toEpochSecond(ZoneOffset.UTC);
+    }
+    
 	/**
 	 * @see java.lang.Runnable#run()
 	 */
@@ -229,6 +239,7 @@ public class Floor implements Runnable{
 	}
 	
 	public static void main(String args[]) {
+		int numberOfElevators = 4;	//Number of elevators in the system
 		InetAddress schedulerAddress = null;
 	   	try {
 	   		schedulerAddress = InetAddress.getLocalHost();
@@ -236,11 +247,18 @@ public class Floor implements Runnable{
 				e.printStackTrace();
 				System.exit(1);
 			}
-	   	Floor floor = new Floor(7, schedulerAddress, 12000);
+		
+		//Initialize floor thread
+	   	Floor floor = new Floor(22, schedulerAddress, 12000);
 	   	Thread floorThread = new Thread(floor, "Floor");
 	   	floorThread.start();
+	   	//Initialize receiver thread
 	   	Receiver r = new Receiver(floor, 12000);
 	   	Thread receiverThread = new Thread(r, "Receiver");
 	   	receiverThread.start();
+	   	//Initialize gui thread
+	   	GUI gui = new GUI(numberOfElevators);
+	   	Thread guiThread = new Thread(gui, "GUI");
+	   	guiThread.start();
 	}
 }

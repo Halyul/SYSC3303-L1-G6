@@ -11,7 +11,7 @@ import project.elevator.Elevator;
 import project.utils.Database;
 
 class ElevatorTest {
-    private Elevator e;
+    private Elevator e, e1;
     
     @BeforeEach
     public void setUp() throws Exception {
@@ -23,12 +23,76 @@ class ElevatorTest {
 			System.exit(1);
 		}
         this.e = new Elevator(1, 1, 7, 0, schedulerAddress, 12000);
-        
+        this.e1 = new Elevator(2, 1, 7, 0, schedulerAddress, 12000);
     }
     
     @Test
     @DisplayName("by default should be Stationary")   
     public void testStationary() {
+        assertEquals("Stationary", e.getState(), "The elevator not in Stationary");
+    }
+
+    @Test
+    @DisplayName("Test multiple cars scheduling")
+    public void testMultipleCars() throws InterruptedException {
+        byte[] eString = "id:1;state:Move;floor:4;".getBytes();
+        byte[] e1String = "id:2;state:Move;floor:1;".getBytes();
+
+        e.put(eString);
+        e1.put(e1String);
+
+        e.execute(); // 1st to 2nd floor
+        e1.execute();
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        assertEquals("Stop", e1.getState(), "The elevator not in Stop");
+        e.execute(); // 2nd to 3rd floor
+        e1.execute();
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        assertEquals("OpenDoor", e1.getState(), "The elevator not in OpenDoor");
+        e.execute(); // 3rf to 4th floor
+        e1.execute();
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        assertEquals("CloseDoor", e1.getState(), "The elevator not in CloseDoor");
+
+        e1String = "id:2;state:Move;floor:3;".getBytes();
+        e1.put(e1String);
+
+        e.execute(); // stop at 4th
+        e1.execute();
+        assertEquals("Stop", e.getState(), "The elevator not in Stop");
+        assertEquals("Move", e1.getState(), "The elevator not in Move");
+        e.execute();
+        e1.execute(); // 2nd to 3rd floor
+        assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
+        assertEquals("Move", e1.getState(), "The elevator not in Move");
+        e.execute();
+        e1.execute(); // stop at 3rd
+        assertEquals("CloseDoor", e.getState(), "The elevator not in CloseDoor");
+        assertEquals("Stop", e1.getState(), "The elevator not in Stop");
+
+        eString = "state:Move;floor:1;".getBytes();
+        e.put(eString);
+
+        e.execute(); // 4th to 3rd floor
+        e1.execute();
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        assertEquals("OpenDoor", e1.getState(), "The elevator not in OpenDoor");
+        e.execute(); // 3rd to 2nd floor
+        e1.execute();
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        assertEquals("CloseDoor", e1.getState(), "The elevator not in CloseDoor");
+        e.execute(); // 2nd to 1st floor
+        e1.execute();
+
+        assertEquals("Move", e.getState(), "The elevator not in Move");
+        assertEquals("Stationary", e1.getState(), "The elevator not in Stationary");
+        e.execute(); // stop at 1st
+        assertEquals("Stop", e.getState(), "The elevator not in Stop");
+        e.execute();
+        assertEquals("OpenDoor", e.getState(), "The elevator not in OpenDoor");
+        e.execute();
+        assertEquals("CloseDoor", e.getState(), "The elevator not in CloseDoor");
+        e.execute();
         assertEquals("Stationary", e.getState(), "The elevator not in Stationary");
     }
     
